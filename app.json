@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "TerminBuddy",
+    "slug": "terminbuddy-mobile",
+    "scheme": "terminbuddy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "plugins": ["expo-router"],
+    "android": {
+      "package": "com.matija.terminbuddy",
+      "adaptiveIcon": {
+        "backgroundColor": "#0a0c09"
+      }
+    }
+  }
+}
