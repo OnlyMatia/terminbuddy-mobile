@@ -1,30 +1,35 @@
-import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { theme } from '../constants/theme';
+import { ThemeProvider } from '../context/ThemeContext';
+import { colors } from '../theme/colors';
 
-function RootNavigator() {
-  const { session, loading } = useAuth();
-  const segments = useSegments();
+function RootNavigation() {
   const router = useRouter();
+  const segments = useSegments();
+  const { session, initializing, onboardingComplete } = useAuth();
 
   useEffect(() => {
-    if (loading) return;
-    const inAuthGroup = segments[0] === '(auth)';
+    if (initializing) return;
+
+    const inAuthGroup = segments[0] === 'login';
+    const inOnboarding = segments[0] === 'onboarding';
+
     if (!session && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (session && inAuthGroup) {
+      router.replace('/login');
+    } else if (session && !onboardingComplete && !inOnboarding) {
+      router.replace('/onboarding');
+    } else if (session && onboardingComplete && (inAuthGroup || inOnboarding)) {
       router.replace('/(tabs)');
     }
-  }, [session, loading, segments]);
+  }, [session, initializing, onboardingComplete, segments]);
 
-  if (loading) {
+  if (initializing) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={theme.logoGreen} />
+      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={colors.logoGreen} />
       </View>
     );
   }
@@ -33,22 +38,24 @@ function RootNavigator() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: theme.background },
+        contentStyle: { backgroundColor: colors.background },
+        animation: 'fade',
       }}
     >
-      <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="onboarding" />
     </Stack>
   );
 }
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <StatusBar style="light" />
+        <RootNavigation />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

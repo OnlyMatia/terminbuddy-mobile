@@ -1,53 +1,93 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../constants/theme';
+import { StyleSheet, View } from 'react-native';
+import { CalendarIcon, HomeIcon, PlusIcon, UserIcon } from '../../components/Icons';
+import { colors } from '../../theme/colors';
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.logoGreen,
-        tabBarInactiveTintColor: theme.textSec,
-        tabBarStyle: {
-          backgroundColor: theme.bg2,
-          borderTopColor: theme.line,
-          borderTopWidth: 1,
-          height: 64,
-          paddingTop: 6,
-          paddingBottom: 8,
-        },
-        tabBarLabelStyle: { fontSize: 11 },
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: colors.logoGreen,
+        tabBarInactiveTintColor: colors.textFaint,
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: styles.tabItem,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Početna',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+          tabBarIcon: ({ color }) => <HomeIcon size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="post"
         options={{
           title: 'Objavi',
-          tabBarIcon: ({ color, size }) => <Ionicons name="add-circle-outline" size={size} color={color} />,
+          tabBarLabel: () => null,
+          tabBarIcon: ({ focused }) => (
+            <View style={[styles.postIconWrap, focused && styles.postIconWrapActive]}>
+              <PlusIcon size={20} color={focused ? '#000' : colors.text} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
-        name="chats"
+        name="my-termins"
         options={{
-          title: 'Razgovori',
-          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubble-outline" size={size} color={color} />,
+          title: 'Moji termini',
+          tabBarIcon: ({ color }) => <CalendarIcon size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profil',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
+          tabBarIcon: ({ color }) => <UserIcon size={22} color={color} />,
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: colors.bg2,
+    borderTopColor: colors.line,
+    borderTopWidth: 1,
+    height: 82,
+    paddingTop: 10,
+    paddingBottom: 22,
+  },
+  tabItem: {
+    paddingTop: 2,
+  },
+  tabLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  postIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.bg3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -20,
+    borderWidth: 1,
+    borderColor: colors.line2,
+  },
+  postIconWrapActive: {
+    backgroundColor: colors.logoGreen,
+    borderColor: colors.logoGreen,
+    shadowColor: colors.logoGreen,
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
+  },
+});

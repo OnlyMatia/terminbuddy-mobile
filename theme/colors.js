@@ -1,9 +1,9 @@
-export const theme = {
+export const colors = {
   background: '#0a0c09',
   bg2: '#10130f',
   bg3: '#161a14',
-  containerBg: '#1c1c1e',
-  border: '#2a2d28',
+  backgroundActive: '#2c2c2e',
+  borderColor: '#2a2d28',
   text: '#eef1ec',
   textSec: '#8a9087',
   textFaint: '#3a3f3a',
@@ -15,4 +15,13 @@ export const theme = {
   greenSoft: 'rgba(8,255,37,0.1)',
   danger: '#ff4a5c',
   warn: '#ffd14d',
+  glass: 'rgba(10,12,9,0.85)',
+};
+
+export const radius = {
+  sm: 8,
+  md: 12,
+  lg: 14,
+  xl: 18,
+  pill: 999,
 };
