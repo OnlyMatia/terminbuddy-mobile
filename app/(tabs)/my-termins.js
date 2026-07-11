@@ -1,16 +1,19 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius } from '../../theme/colors';
 
 export default function MyTermins() {
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Text style={styles.title}>Moji termini</Text>
-      <Text style={styles.subtitle}>Termini na koje si se prijavio ili koje si objavio.</Text>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <Text style={styles.title}>Moji termini</Text>
+        <Text style={styles.subtitle}>Termini na koje si se prijavio ili koje si objavio.</Text>
 
-      <View style={styles.emptyState}>
-        <Text style={styles.emptyText}>Još se nisi prijavio ni na jedan termin.</Text>
-      </View>
-    </ScrollView>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>Još se nisi prijavio ni na jedan termin.</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

@@ -94,3 +94,21 @@ export const SKILL_OPTIONS = [
 ];
 
 export const SLOT_PRESETS = [4, 6, 8, 10, 12, 14, 16, 20];
+
+export const days = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'];
+
+export const SPORT_COLORS = {
+  nogomet: '#22c55e',
+  košarka: '#f97316',
+  odbojka: '#3b82f6',
+  tenis: '#eab308',
+  padel: '#a855f7',
+  'stolni tenis': '#a855f7',
+  badminton: '#ec4899',
+  rukomet: '#ef4444',
+  vaterpolo: '#06b6d4',
+  boks: '#f43f5e',
+  kikboks: '#f43f5e',
+};
+
+export const TEAM_SPORTS = ['nogomet', 'košarka', 'odbojka', 'rukomet', 'vaterpolo'];

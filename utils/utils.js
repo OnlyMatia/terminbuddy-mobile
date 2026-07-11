@@ -54,3 +54,20 @@ export function formatPrice(amount, currency = 'BAM') {
   const formatted = Number.isInteger(n) ? String(n) : n.toFixed(1);
   return `${formatted} ${symbol}`;
 }
+
+const EUR_TO_BAM = 1.95583;
+
+export function convertCurrency(amount, from, to) {
+  const n = Number(amount) || 0;
+  if (!n || from === to) return n;
+  if (from === 'EUR' && to !== 'EUR') return n * EUR_TO_BAM;
+  if (from !== 'EUR' && to === 'EUR') return n / EUR_TO_BAM;
+  return n;
+}
+
+export function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
+}

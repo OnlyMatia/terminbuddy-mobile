@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FloatingInput } from '../components/FloatingInput';
 import { BLogo, EyeIcon, EyeOffIcon, GoogleIcon, MailIcon } from '../components/Icons';
 import { Toast } from '../components/Toast';
@@ -213,151 +214,153 @@ export default function AuthScreen() {
 
   if (pendingEmail) {
     return (
-      <View style={styles.screen}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
         <EmailWaitingScreen email={pendingEmail} onBack={handleBackToForm} onResend={handleResendEmail} cooldown={resendCooldown} resending={resending} variant="signup" />
         {toast && <Toast toast={toast} onDismiss={dismissToast} />}
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (forgotSentEmail) {
     return (
-      <View style={styles.screen}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
         <EmailWaitingScreen email={forgotSentEmail} onBack={handleBackFromForgot} onResend={handleResendResetEmail} cooldown={resendCooldown} resending={resending} variant="reset" />
         {toast && <Toast toast={toast} onDismiss={dismissToast} />}
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Animated.View
-          style={{
-            opacity: modalAnim,
-            transform: [
-              {
-                translateY: modalAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [30, 0],
-                }),
-              },
-            ],
-          }}
-        >
-          <View style={styles.brandRow}>
-            <BLogo size={28} />
-            <Text style={styles.brandText}>TerminBuddy</Text>
-          </View>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Animated.View
+            style={{
+              opacity: modalAnim,
+              transform: [
+                {
+                  translateY: modalAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [30, 0],
+                  }),
+                },
+              ],
+            }}
+          >
+            <View style={styles.brandRow}>
+              <BLogo size={28} />
+              <Text style={styles.brandText}>TerminBuddy</Text>
+            </View>
 
-          <Animated.View style={{ opacity: contentAnim }}>
-            {mode === 'forgot' ? (
-              <ForgotPasswordForm formData={formData} setField={setField} onSubmit={handleForgotPassword} loading={loading} onBackToLogin={() => switchMode('login')} />
-            ) : (
-              <>
-                <Text style={styles.title}>{mode === 'login' ? 'Dobrodošli natrag' : 'Pridruži se i zaigraj'}</Text>
-                <Text style={styles.subtitle}>{mode === 'login' ? 'Prijavi se i istraži današnje termine.' : '30 sekundi za registraciju. Tvoj prvi termin neka bude danas'}</Text>
+            <Animated.View style={{ opacity: contentAnim }}>
+              {mode === 'forgot' ? (
+                <ForgotPasswordForm formData={formData} setField={setField} onSubmit={handleForgotPassword} loading={loading} onBackToLogin={() => switchMode('login')} />
+              ) : (
+                <>
+                  <Text style={styles.title}>{mode === 'login' ? 'Dobrodošli natrag' : 'Pridruži se i zaigraj'}</Text>
+                  <Text style={styles.subtitle}>{mode === 'login' ? 'Prijavi se i istraži današnje termine.' : '30 sekundi za registraciju. Tvoj prvi termin neka bude danas'}</Text>
 
-                <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleLogin} disabled={loading} activeOpacity={0.85}>
-                  <GoogleIcon size={18} />
-                  <Text style={styles.googleBtnText}>{mode === 'login' ? 'Nastavi s Googleom' : 'Registriraj se s Googleom'}</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleLogin} disabled={loading} activeOpacity={0.85}>
+                    <GoogleIcon size={18} />
+                    <Text style={styles.googleBtnText}>{mode === 'login' ? 'Nastavi s Googleom' : 'Registriraj se s Googleom'}</Text>
+                  </TouchableOpacity>
 
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>{mode === 'login' ? 'ili nastavi s emailom' : 'ili s emailom'}</Text>
-                  <View style={styles.dividerLine} />
-                </View>
+                  <View style={styles.dividerRow}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>{mode === 'login' ? 'ili nastavi s emailom' : 'ili s emailom'}</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
 
-                <View style={{ gap: 14 }}>
-                  <FloatingInput label="Email adresa" value={formData.email} onChangeText={(v) => setField('email', v)} onFocus={handleEmailFocus} keyboardType="email-address" icon={<MailIcon />} />
+                  <View style={{ gap: 14 }}>
+                    <FloatingInput label="Email adresa" value={formData.email} onChangeText={(v) => setField('email', v)} onFocus={handleEmailFocus} keyboardType="email-address" icon={<MailIcon />} />
 
-                  {showPasswordField && (
-                    <>
-                      <FloatingInput
-                        label={mode === 'login' ? 'Lozinka' : 'Kreiraj lozinku'}
-                        value={formData.password}
-                        onChangeText={(v) => setField('password', v)}
-                        secureTextEntry={!showPassword}
-                        rightIcon={showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
-                        onRightIconPress={() => setShowPassword(!showPassword)}
-                      />
-
-                      {mode === 'register' && formData.password.length > 0 && (
-                        <View style={{ paddingHorizontal: 4, marginTop: -6 }}>
-                          <View style={{ flexDirection: 'row', gap: 3 }}>
-                            {[1, 2, 3, 4].map((n) => (
-                              <View
-                                key={n}
-                                style={{
-                                  flex: 1,
-                                  height: 3,
-                                  borderRadius: 2,
-                                  backgroundColor: n <= passwordStrength ? STRENGTH_COLORS[passwordStrength] : colors.bg3,
-                                }}
-                              />
-                            ))}
-                          </View>
-                          {passwordStrength > 0 && (
-                            <Text style={styles.strengthText}>
-                              Jačina: <Text style={{ color: STRENGTH_COLORS[passwordStrength], fontWeight: '600' }}>{STRENGTH_LABELS[passwordStrength]}</Text>
-                            </Text>
-                          )}
-                        </View>
-                      )}
-
-                      {mode === 'register' && (
+                    {showPasswordField && (
+                      <>
                         <FloatingInput
-                          label="Potvrdi lozinku"
-                          value={formData.confirmPassword}
-                          onChangeText={(v) => setField('confirmPassword', v)}
-                          secureTextEntry={!showPasswordConfirm}
-                          rightIcon={showPasswordConfirm ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
-                          onRightIconPress={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                          label={mode === 'login' ? 'Lozinka' : 'Kreiraj lozinku'}
+                          value={formData.password}
+                          onChangeText={(v) => setField('password', v)}
+                          secureTextEntry={!showPassword}
+                          rightIcon={showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                          onRightIconPress={() => setShowPassword(!showPassword)}
                         />
-                      )}
-                    </>
-                  )}
 
-                  {mode === 'login' && showPasswordField && (
-                    <View style={styles.rememberRow}>
-                      <Text style={styles.rememberText}>Zapamti me</Text>
-                      <TouchableOpacity onPress={() => switchMode('forgot')}>
-                        <Text style={styles.forgotLink}>Zaboravljena lozinka?</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                        {mode === 'register' && formData.password.length > 0 && (
+                          <View style={{ paddingHorizontal: 4, marginTop: -6 }}>
+                            <View style={{ flexDirection: 'row', gap: 3 }}>
+                              {[1, 2, 3, 4].map((n) => (
+                                <View
+                                  key={n}
+                                  style={{
+                                    flex: 1,
+                                    height: 3,
+                                    borderRadius: 2,
+                                    backgroundColor: n <= passwordStrength ? STRENGTH_COLORS[passwordStrength] : colors.bg3,
+                                  }}
+                                />
+                              ))}
+                            </View>
+                            {passwordStrength > 0 && (
+                              <Text style={styles.strengthText}>
+                                Jačina: <Text style={{ color: STRENGTH_COLORS[passwordStrength], fontWeight: '600' }}>{STRENGTH_LABELS[passwordStrength]}</Text>
+                              </Text>
+                            )}
+                          </View>
+                        )}
 
-                  <TouchableOpacity style={[styles.submitBtn, { backgroundColor: loading ? colors.bg3 : colors.logoGreen }]} onPress={handleSubmit} disabled={loading} activeOpacity={0.9}>
-                    {loading && <ActivityIndicator size="small" color={colors.textSec} />}
-                    <Text
-                      style={{
-                        color: loading ? colors.textSec : '#000',
-                        fontWeight: '600',
-                        fontSize: 14,
-                      }}
-                    >
-                      {mode === 'login' ? (showPasswordField ? 'Prijavi se' : 'Nastavi') : 'Registriraj se'}
-                    </Text>
-                  </TouchableOpacity>
+                        {mode === 'register' && (
+                          <FloatingInput
+                            label="Potvrdi lozinku"
+                            value={formData.confirmPassword}
+                            onChangeText={(v) => setField('confirmPassword', v)}
+                            secureTextEntry={!showPasswordConfirm}
+                            rightIcon={showPasswordConfirm ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                            onRightIconPress={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                          />
+                        )}
+                      </>
+                    )}
 
-                  <Text style={styles.legalText}>{mode === 'login' ? 'Nastavljanjem prihvaćate naše Uvjete i Privatnost.' : 'Kreiranjem računa prihvaćate naše Uvjete i Privatnost.'}</Text>
-                </View>
+                    {mode === 'login' && showPasswordField && (
+                      <View style={styles.rememberRow}>
+                        <Text style={styles.rememberText}>Zapamti me</Text>
+                        <TouchableOpacity onPress={() => switchMode('forgot')}>
+                          <Text style={styles.forgotLink}>Zaboravljena lozinka?</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
 
-                <View style={styles.switchRow}>
-                  <Text style={styles.switchText}>{mode === 'login' ? 'Novi na TerminBuddy?' : 'Već imaš račun?'}</Text>
-                  <TouchableOpacity onPress={() => switchMode(mode === 'login' ? 'register' : 'login')}>
-                    <Text style={styles.switchLink}>{mode === 'login' ? 'Kreiraj račun' : 'Prijavi se'}</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
+                    <TouchableOpacity style={[styles.submitBtn, { backgroundColor: loading ? colors.bg3 : colors.logoGreen }]} onPress={handleSubmit} disabled={loading} activeOpacity={0.9}>
+                      {loading && <ActivityIndicator size="small" color={colors.textSec} />}
+                      <Text
+                        style={{
+                          color: loading ? colors.textSec : '#000',
+                          fontWeight: '600',
+                          fontSize: 14,
+                        }}
+                      >
+                        {mode === 'login' ? (showPasswordField ? 'Prijavi se' : 'Nastavi') : 'Registriraj se'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.legalText}>{mode === 'login' ? 'Nastavljanjem prihvaćate naše Uvjete i Privatnost.' : 'Kreiranjem računa prihvaćate naše Uvjete i Privatnost.'}</Text>
+                  </View>
+
+                  <View style={styles.switchRow}>
+                    <Text style={styles.switchText}>{mode === 'login' ? 'Novi na TerminBuddy?' : 'Već imaš račun?'}</Text>
+                    <TouchableOpacity onPress={() => switchMode(mode === 'login' ? 'register' : 'login')}>
+                      <Text style={styles.switchLink}>{mode === 'login' ? 'Kreiraj račun' : 'Prijavi se'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
-      </ScrollView>
+        </ScrollView>
 
-      {toast && <Toast toast={toast} onDismiss={dismissToast} />}
-    </KeyboardAvoidingView>
+        {toast && <Toast toast={toast} onDismiss={dismissToast} />}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

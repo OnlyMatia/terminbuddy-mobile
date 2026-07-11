@@ -1,6 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BLogo, SearchIcon, UserIcon } from '../components/Icons';
 import StepShell from '../components/StepShell';
 import { Toast } from '../components/Toast';
@@ -313,273 +314,275 @@ export default function OnboardingScreen({ user, editMode = false, onFinish, onE
   const stepNumber = (idx) => String(idx + 1).padStart(2, '0');
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.topBar}>
-        <View style={styles.brandRow}>
-          <BLogo size={26} />
-          <Text style={styles.brandText}>TerminBuddy</Text>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={styles.topBar}>
+          <View style={styles.brandRow}>
+            <BLogo size={26} />
+            <Text style={styles.brandText}>TerminBuddy</Text>
+          </View>
+          <Text style={styles.stepCounter}>{editMode ? 'Uredi profil' : `Korak ${stepIndex + 1} / ${STEPS.length}`}</Text>
         </View>
-        <Text style={styles.stepCounter}>{editMode ? 'Uredi profil' : `Korak ${stepIndex + 1} / ${STEPS.length}`}</Text>
-      </View>
 
-      <View style={styles.progressTrack}>
-        <Animated.View
-          style={[
-            styles.progressFill,
-            {
-              width: progressAnim.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }),
-            },
-          ]}
-        />
-      </View>
+        <View style={styles.progressTrack}>
+          <Animated.View
+            style={[
+              styles.progressFill,
+              {
+                width: progressAnim.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }),
+              },
+            ]}
+          />
+        </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: 140 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Animated.View style={{ opacity: stepAnim }}>
-          {currentStep === 'identity' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Tvoje ime." help="Kako se zoveš? Ovo se prikazuje na tvom profilu.">
-              <TextInput placeholder="Ime i prezime" placeholderTextColor={colors.textFaint} maxLength={20} value={form.full_name} onChangeText={(v) => setForm((p) => ({ ...p, full_name: v }))} style={styles.input} autoFocus />
-              {isGoogle && form.full_name && !editMode && <Text style={styles.hint}>Povučeno s Google računa. Slobodno uredi.</Text>}
-            </StepShell>
-          )}
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: 140 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Animated.View style={{ opacity: stepAnim }}>
+            {currentStep === 'identity' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Tvoje ime." help="Kako se zoveš? Ovo se prikazuje na tvom profilu.">
+                <TextInput placeholder="Ime i prezime" placeholderTextColor={colors.textFaint} maxLength={20} value={form.full_name} onChangeText={(v) => setForm((p) => ({ ...p, full_name: v }))} style={styles.input} autoFocus />
+                {isGoogle && form.full_name && !editMode && <Text style={styles.hint}>Povučeno s Google računa. Slobodno uredi.</Text>}
+              </StepShell>
+            )}
 
-          {currentStep === 'username' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Odaberi korisničko ime." help="Jedinstveno ime koje drugi vide. Najmanje 3 znaka." required>
-              <TextInput
-                placeholder="npr. ivana.t"
-                placeholderTextColor={colors.textFaint}
-                maxLength={20}
-                autoCapitalize="none"
-                value={form.username}
-                onChangeText={(v) => {
-                  const val = v.replace(/\s/g, '').replace(/[^a-zA-Z0-9.\-_]/g, '');
-                  setForm((p) => ({ ...p, username: val }));
-                }}
-                style={styles.input}
-              />
-              <Text style={styles.hint}>Samo slova, brojevi, točka, crtica i podvlaka. Bez razmaka.</Text>
-            </StepShell>
-          )}
+            {currentStep === 'username' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Odaberi korisničko ime." help="Jedinstveno ime koje drugi vide. Najmanje 3 znaka." required>
+                <TextInput
+                  placeholder="npr. ivana.t"
+                  placeholderTextColor={colors.textFaint}
+                  maxLength={20}
+                  autoCapitalize="none"
+                  value={form.username}
+                  onChangeText={(v) => {
+                    const val = v.replace(/\s/g, '').replace(/[^a-zA-Z0-9.\-_]/g, '');
+                    setForm((p) => ({ ...p, username: val }));
+                  }}
+                  style={styles.input}
+                />
+                <Text style={styles.hint}>Samo slova, brojevi, točka, crtica i podvlaka. Bez razmaka.</Text>
+              </StepShell>
+            )}
 
-          {currentStep === 'avatar' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Profilna slika" help={editMode ? 'Promijeni svoju profilnu sliku.' : 'Profilna slika pomaže ekipi da te prepozna. Možeš preskočiti i dodati kasnije.'}>
-              <View style={styles.avatarWrap}>
-                <TouchableOpacity onPress={handlePickAvatar} style={[styles.avatarCircle, avatarLoading && { opacity: 0.5 }]} activeOpacity={0.85}>
-                  {form.avatar_url ? (
-                    <Image source={{ uri: form.avatar_url }} style={styles.avatarImg} />
-                  ) : (
-                    <View style={styles.avatarFallback}>
-                      <UserIcon size={48} color={colors.textFaint} />
+            {currentStep === 'avatar' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Profilna slika" help={editMode ? 'Promijeni svoju profilnu sliku.' : 'Profilna slika pomaže ekipi da te prepozna. Možeš preskočiti i dodati kasnije.'}>
+                <View style={styles.avatarWrap}>
+                  <TouchableOpacity onPress={handlePickAvatar} style={[styles.avatarCircle, avatarLoading && { opacity: 0.5 }]} activeOpacity={0.85}>
+                    {form.avatar_url ? (
+                      <Image source={{ uri: form.avatar_url }} style={styles.avatarImg} />
+                    ) : (
+                      <View style={styles.avatarFallback}>
+                        <UserIcon size={48} color={colors.textFaint} />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                  {avatarLoading && <Text style={styles.savingText}>Spremam...</Text>}
+                </View>
+              </StepShell>
+            )}
+
+            {currentStep === 'bio' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Reci nešto o sebi" help="Kratki opis - kako igraš, što voliš, kad si dostupan. Neobavezno.">
+                <TextInput
+                  placeholder="npr. Najdostupniji vikendima. Vanjski tereni++"
+                  placeholderTextColor={colors.textFaint}
+                  maxLength={280}
+                  multiline
+                  numberOfLines={4}
+                  value={form.bio}
+                  onChangeText={(v) => setForm((p) => ({ ...p, bio: v }))}
+                  style={styles.textarea}
+                />
+                <Text style={styles.counter}>{form.bio.length} / 280</Text>
+              </StepShell>
+            )}
+
+            {currentStep === 'birthdate' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Kada si rođen?" help="Zavrti kotačić i odaberi datum rođenja. Na profilu prikazujemo samo tvoje godine." required>
+                <View style={styles.wheelLabelsRow}>
+                  <Text style={styles.wheelLabel}>Dan</Text>
+                  <Text style={styles.wheelLabel}>Mjesec</Text>
+                  <Text style={styles.wheelLabel}>Godina</Text>
+                </View>
+                <View style={styles.wheelContainer}>
+                  <View style={styles.wheelHighlight} pointerEvents="none" />
+                  <View style={styles.wheelRow}>
+                    <View style={{ flex: 1 }}>
+                      <WheelColumn options={dayOptions} value={form.dob_day} onSelect={(v) => setDobPart('dob_day', v)} />
                     </View>
-                  )}
-                </TouchableOpacity>
-                {avatarLoading && <Text style={styles.savingText}>Spremam...</Text>}
-              </View>
-            </StepShell>
-          )}
-
-          {currentStep === 'bio' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Reci nešto o sebi" help="Kratki opis - kako igraš, što voliš, kad si dostupan. Neobavezno.">
-              <TextInput
-                placeholder="npr. Najdostupniji vikendima. Vanjski tereni++"
-                placeholderTextColor={colors.textFaint}
-                maxLength={280}
-                multiline
-                numberOfLines={4}
-                value={form.bio}
-                onChangeText={(v) => setForm((p) => ({ ...p, bio: v }))}
-                style={styles.textarea}
-              />
-              <Text style={styles.counter}>{form.bio.length} / 280</Text>
-            </StepShell>
-          )}
-
-          {currentStep === 'birthdate' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Kada si rođen?" help="Zavrti kotačić i odaberi datum rođenja. Na profilu prikazujemo samo tvoje godine." required>
-              <View style={styles.wheelLabelsRow}>
-                <Text style={styles.wheelLabel}>Dan</Text>
-                <Text style={styles.wheelLabel}>Mjesec</Text>
-                <Text style={styles.wheelLabel}>Godina</Text>
-              </View>
-              <View style={styles.wheelContainer}>
-                <View style={styles.wheelHighlight} pointerEvents="none" />
-                <View style={styles.wheelRow}>
-                  <View style={{ flex: 1 }}>
-                    <WheelColumn options={dayOptions} value={form.dob_day} onSelect={(v) => setDobPart('dob_day', v)} />
-                  </View>
-                  <View style={{ flex: 1.4 }}>
-                    <WheelColumn options={monthOptions} value={form.dob_month} onSelect={(v) => setDobPart('dob_month', v)} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <WheelColumn options={yearOptions} value={form.dob_year} onSelect={(v) => setDobPart('dob_year', v)} />
+                    <View style={{ flex: 1.4 }}>
+                      <WheelColumn options={monthOptions} value={form.dob_month} onSelect={(v) => setDobPart('dob_month', v)} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <WheelColumn options={yearOptions} value={form.dob_year} onSelect={(v) => setDobPart('dob_year', v)} />
+                    </View>
                   </View>
                 </View>
-              </View>
-              <View style={{ marginTop: 16, minHeight: 24 }}>
-                {dobUnderage ? (
-                  <Text style={styles.errorText}>Moraš imati najmanje {MIN_AGE} godina za registraciju.</Text>
-                ) : (
-                  previewAge !== null && (
-                    <Text style={styles.previewAge}>
-                      {form.dob_day}. {MONTHS[form.dob_month - 1]} {form.dob_year}. — {previewAge} godina
-                    </Text>
-                  )
-                )}
-              </View>
-            </StepShell>
-          )}
+                <View style={{ marginTop: 16, minHeight: 24 }}>
+                  {dobUnderage ? (
+                    <Text style={styles.errorText}>Moraš imati najmanje {MIN_AGE} godina za registraciju.</Text>
+                  ) : (
+                    previewAge !== null && (
+                      <Text style={styles.previewAge}>
+                        {form.dob_day}. {MONTHS[form.dob_month - 1]} {form.dob_year}. — {previewAge} godina
+                      </Text>
+                    )
+                  )}
+                </View>
+              </StepShell>
+            )}
 
-          {currentStep === 'city' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Odakle si?" help="Odaberi državu pa grad. Prikazujemo ti termine u tvojoj blizini." required>
-              <View style={styles.countryRow}>
-                <TouchableOpacity onPress={() => setForm((p) => ({ ...p, country: 'Hrvatska', city: '' }))} style={[styles.countryBtn, form.country === 'Hrvatska' && styles.countryBtnActive]}>
-                  <Text style={[styles.countryText, form.country === 'Hrvatska' && { color: colors.logoGreen }]}>Hrvatska</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setForm((p) => ({ ...p, country: 'Bosna i Hercegovina', city: '' }))} style={[styles.countryBtn, form.country === 'Bosna i Hercegovina' && styles.countryBtnActive]}>
-                  <Text style={[styles.countryText, form.country === 'Bosna i Hercegovina' && { color: colors.logoGreen }]}>BiH</Text>
-                </TouchableOpacity>
-              </View>
+            {currentStep === 'city' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Odakle si?" help="Odaberi državu pa grad. Prikazujemo ti termine u tvojoj blizini." required>
+                <View style={styles.countryRow}>
+                  <TouchableOpacity onPress={() => setForm((p) => ({ ...p, country: 'Hrvatska', city: '' }))} style={[styles.countryBtn, form.country === 'Hrvatska' && styles.countryBtnActive]}>
+                    <Text style={[styles.countryText, form.country === 'Hrvatska' && { color: colors.logoGreen }]}>Hrvatska</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setForm((p) => ({ ...p, country: 'Bosna i Hercegovina', city: '' }))} style={[styles.countryBtn, form.country === 'Bosna i Hercegovina' && styles.countryBtnActive]}>
+                    <Text style={[styles.countryText, form.country === 'Bosna i Hercegovina' && { color: colors.logoGreen }]}>BiH</Text>
+                  </TouchableOpacity>
+                </View>
 
-              {form.country && (
-                <View>
-                  <View style={styles.searchBox}>
-                    <SearchIcon size={18} />
-                    <TextInput
-                      placeholder="Traži grad ili upiši vlastiti..."
-                      placeholderTextColor={colors.textFaint}
-                      value={citySearch}
-                      onChangeText={setCitySearch}
-                      onSubmitEditing={() => citySearch.trim() && setForm((p) => ({ ...p, city: citySearch.trim() }))}
-                      style={styles.searchInput}
-                    />
-                  </View>
-                  <View style={styles.chipsWrap}>
-                    {filteredCities.map((c) => (
-                      <TouchableOpacity
-                        key={c}
-                        onPress={() => {
-                          setForm((p) => ({ ...p, city: c }));
-                          setCitySearch('');
-                        }}
-                        style={[styles.chip, form.city === c && styles.chipSelected]}
-                      >
-                        <Text style={[styles.chipText, form.city === c && { color: '#000', fontWeight: '600' }]}>{c}</Text>
-                      </TouchableOpacity>
-                    ))}
-                    {citySearch.trim() && !filteredCities.some((c) => c.toLowerCase() === citySearch.trim().toLowerCase()) && (
-                      <TouchableOpacity
-                        onPress={() => {
-                          setForm((p) => ({ ...p, city: citySearch.trim() }));
-                          setCitySearch('');
-                        }}
-                        style={styles.customChip}
-                      >
-                        <Text style={styles.customChipText}>+ "{citySearch.trim()}"</Text>
-                      </TouchableOpacity>
+                {form.country && (
+                  <View>
+                    <View style={styles.searchBox}>
+                      <SearchIcon size={18} />
+                      <TextInput
+                        placeholder="Traži grad ili upiši vlastiti..."
+                        placeholderTextColor={colors.textFaint}
+                        value={citySearch}
+                        onChangeText={setCitySearch}
+                        onSubmitEditing={() => citySearch.trim() && setForm((p) => ({ ...p, city: citySearch.trim() }))}
+                        style={styles.searchInput}
+                      />
+                    </View>
+                    <View style={styles.chipsWrap}>
+                      {filteredCities.map((c) => (
+                        <TouchableOpacity
+                          key={c}
+                          onPress={() => {
+                            setForm((p) => ({ ...p, city: c }));
+                            setCitySearch('');
+                          }}
+                          style={[styles.chip, form.city === c && styles.chipSelected]}
+                        >
+                          <Text style={[styles.chipText, form.city === c && { color: '#000', fontWeight: '600' }]}>{c}</Text>
+                        </TouchableOpacity>
+                      ))}
+                      {citySearch.trim() && !filteredCities.some((c) => c.toLowerCase() === citySearch.trim().toLowerCase()) && (
+                        <TouchableOpacity
+                          onPress={() => {
+                            setForm((p) => ({ ...p, city: citySearch.trim() }));
+                            setCitySearch('');
+                          }}
+                          style={styles.customChip}
+                        >
+                          <Text style={styles.customChipText}>+ "{citySearch.trim()}"</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    {form.city && !availableCities.includes(form.city) && (
+                      <Text style={styles.hint}>
+                        Vlastiti grad: <Text style={{ color: colors.logoGreen, fontWeight: '600' }}>{form.city}</Text>
+                      </Text>
                     )}
                   </View>
-                  {form.city && !availableCities.includes(form.city) && (
-                    <Text style={styles.hint}>
-                      Vlastiti grad: <Text style={{ color: colors.logoGreen, fontWeight: '600' }}>{form.city}</Text>
-                    </Text>
-                  )}
+                )}
+              </StepShell>
+            )}
+
+            {currentStep === 'sports' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Najdraži sportovi" help="Odaberi do 3 sporta i označi koliko si dobar u svakom.">
+                <View style={styles.searchBox}>
+                  <SearchIcon size={18} />
+                  <TextInput
+                    placeholder="Traži sport ili upiši vlastiti..."
+                    placeholderTextColor={colors.textFaint}
+                    value={sportSearch}
+                    onChangeText={setSportSearch}
+                    onSubmitEditing={() => sportSearch.trim() && addCustomSport(sportSearch)}
+                    style={styles.searchInput}
+                  />
                 </View>
-              )}
-            </StepShell>
-          )}
 
-          {currentStep === 'sports' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Najdraži sportovi" help="Odaberi do 3 sporta i označi koliko si dobar u svakom.">
-              <View style={styles.searchBox}>
-                <SearchIcon size={18} />
-                <TextInput
-                  placeholder="Traži sport ili upiši vlastiti..."
-                  placeholderTextColor={colors.textFaint}
-                  value={sportSearch}
-                  onChangeText={setSportSearch}
-                  onSubmitEditing={() => sportSearch.trim() && addCustomSport(sportSearch)}
-                  style={styles.searchInput}
-                />
-              </View>
-
-              {sportSearch.trim() && !filteredSports.some((s) => s.toLowerCase() === sportSearch.trim().toLowerCase()) && (
-                <TouchableOpacity onPress={() => addCustomSport(sportSearch)} style={styles.addSportBtn}>
-                  <Text style={styles.customChipText}>+ Dodaj "{sportSearch.trim()}"</Text>
-                </TouchableOpacity>
-              )}
-
-              <View style={styles.sportsGrid}>
-                {filteredSports.map((sport) => {
-                  const selected = form.favorite_sports.find((s) => s.sport === sport);
-                  return (
-                    <TouchableOpacity key={sport} onPress={() => toggleSport(sport)} style={[styles.sportOpt, selected && styles.sportOptSelected]}>
-                      <Text style={{ fontSize: 18 }}>{SPORT_ICONS[sport] || '⚽'}</Text>
-                      <Text style={[styles.sportOptText, selected && { color: '#000' }]}>{sport}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              {form.favorite_sports.length > 0 && (
-                <>
-                  <Text style={styles.sectionLabel}>Odaberi svoju razinu u sportovima</Text>
-                  <View style={{ gap: 8 }}>
-                    {form.favorite_sports.map((s) => (
-                      <View key={s.sport} style={styles.skillRow}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <Text style={{ fontSize: 16 }}>{SPORT_ICONS[s.sport] || '⚽'}</Text>
-                          <Text style={styles.skillRowText}>{s.sport}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', gap: 4 }}>
-                          {[1, 2, 3, 4, 5].map((n) => (
-                            <TouchableOpacity key={n} onPress={() => setSportSkill(s.sport, n)} style={[styles.skillBar, n <= s.skill && styles.skillBarOn]} />
-                          ))}
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                </>
-              )}
-            </StepShell>
-          )}
-
-          {currentStep === 'level' && (
-            <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Tvoja razina igranja" help="Općeniti opis tvoje razine. Neobavezno.">
-              <View style={{ gap: 8 }}>
-                {LEVELS.map((lvl) => (
-                  <TouchableOpacity key={lvl.id} onPress={() => setForm((p) => ({ ...p, player_level: lvl.id }))} style={[styles.levelCard, form.player_level === lvl.id && styles.levelCardSelected]}>
-                    <Text style={styles.levelName}>{lvl.name}</Text>
-                    <Text style={styles.levelDesc}>{lvl.desc}</Text>
+                {sportSearch.trim() && !filteredSports.some((s) => s.toLowerCase() === sportSearch.trim().toLowerCase()) && (
+                  <TouchableOpacity onPress={() => addCustomSport(sportSearch)} style={styles.addSportBtn}>
+                    <Text style={styles.customChipText}>+ Dodaj "{sportSearch.trim()}"</Text>
                   </TouchableOpacity>
-                ))}
-              </View>
-            </StepShell>
-          )}
-        </Animated.View>
-      </ScrollView>
+                )}
 
-      <View style={styles.bottomBar}>
-        <TouchableOpacity onPress={handleBack} disabled={stepIndex === 0 && !editMode} style={[styles.backBtn, stepIndex === 0 && !editMode && { opacity: 0.3 }]}>
-          <Text style={styles.backBtnText}>{stepIndex === 0 && editMode ? 'Odustani' : 'Nazad'}</Text>
-        </TouchableOpacity>
+                <View style={styles.sportsGrid}>
+                  {filteredSports.map((sport) => {
+                    const selected = form.favorite_sports.find((s) => s.sport === sport);
+                    return (
+                      <TouchableOpacity key={sport} onPress={() => toggleSport(sport)} style={[styles.sportOpt, selected && styles.sportOptSelected]}>
+                        <Text style={{ fontSize: 18 }}>{SPORT_ICONS[sport] || '⚽'}</Text>
+                        <Text style={[styles.sportOptText, selected && { color: '#000' }]}>{sport}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
 
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          {!isStepRequired && (
-            <TouchableOpacity onPress={handleSkip} disabled={loading} style={styles.skipBtn}>
-              <Text style={styles.skipBtnText}>{editMode ? 'Spremi' : 'Preskoči'}</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity onPress={handleNext} disabled={nextDisabled} style={[styles.nextBtn, nextDisabled && { opacity: 0.5 }]}>
-            {loading ? <ActivityIndicator size="small" color="#000" /> : <Text style={styles.nextBtnText}>{isLastStep ? 'Spremi' : 'Dalje'}</Text>}
+                {form.favorite_sports.length > 0 && (
+                  <>
+                    <Text style={styles.sectionLabel}>Odaberi svoju razinu u sportovima</Text>
+                    <View style={{ gap: 8 }}>
+                      {form.favorite_sports.map((s) => (
+                        <View key={s.sport} style={styles.skillRow}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <Text style={{ fontSize: 16 }}>{SPORT_ICONS[s.sport] || '⚽'}</Text>
+                            <Text style={styles.skillRowText}>{s.sport}</Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', gap: 4 }}>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <TouchableOpacity key={n} onPress={() => setSportSkill(s.sport, n)} style={[styles.skillBar, n <= s.skill && styles.skillBarOn]} />
+                            ))}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                )}
+              </StepShell>
+            )}
+
+            {currentStep === 'level' && (
+              <StepShell num={stepNumber(stepIndex)} total={STEPS.length} title="Tvoja razina igranja" help="Općeniti opis tvoje razine. Neobavezno.">
+                <View style={{ gap: 8 }}>
+                  {LEVELS.map((lvl) => (
+                    <TouchableOpacity key={lvl.id} onPress={() => setForm((p) => ({ ...p, player_level: lvl.id }))} style={[styles.levelCard, form.player_level === lvl.id && styles.levelCardSelected]}>
+                      <Text style={styles.levelName}>{lvl.name}</Text>
+                      <Text style={styles.levelDesc}>{lvl.desc}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </StepShell>
+            )}
+          </Animated.View>
+        </ScrollView>
+
+        <View style={styles.bottomBar}>
+          <TouchableOpacity onPress={handleBack} disabled={stepIndex === 0 && !editMode} style={[styles.backBtn, stepIndex === 0 && !editMode && { opacity: 0.3 }]}>
+            <Text style={styles.backBtnText}>{stepIndex === 0 && editMode ? 'Odustani' : 'Nazad'}</Text>
           </TouchableOpacity>
-        </View>
-      </View>
 
-      {toast && (
-        <View style={styles.toastWrap}>
-          <Toast toast={toast} onDismiss={dismissToast} />
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {!isStepRequired && (
+              <TouchableOpacity onPress={handleSkip} disabled={loading} style={styles.skipBtn}>
+                <Text style={styles.skipBtnText}>{editMode ? 'Spremi' : 'Preskoči'}</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleNext} disabled={nextDisabled} style={[styles.nextBtn, nextDisabled && { opacity: 0.5 }]}>
+              {loading ? <ActivityIndicator size="small" color="#000" /> : <Text style={styles.nextBtnText}>{isLastStep ? 'Spremi' : 'Dalje'}</Text>}
+            </TouchableOpacity>
+          </View>
         </View>
-      )}
-    </KeyboardAvoidingView>
+
+        {toast && (
+          <View style={styles.toastWrap}>
+            <Toast toast={toast} onDismiss={dismissToast} />
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CloseIcon } from '../components/Icons';
 import { Toast } from '../components/Toast';
 import { colors } from '../theme/colors';
@@ -145,7 +146,7 @@ export default function PostForm({ userProfile, onCreateTermin }) {
 
   if (success) {
     return (
-      <View style={styles.successScreen}>
+      <SafeAreaView style={styles.successScreen} edges={['top']}>
         <View style={styles.successIcon}>
           <Text style={{ fontSize: 44, color: colors.logoGreen }}>✓</Text>
         </View>
@@ -161,82 +162,84 @@ export default function PostForm({ userProfile, onCreateTermin }) {
             <Text style={styles.successSecondaryBtnText}>Natrag na termine</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.progressTrack}>
-        <Animated.View
-          style={[
-            styles.progressFill,
-            {
-              width: progressAnim.interpolate({
-                inputRange: [0, 100],
-                outputRange: ['0%', '100%'],
-              }),
-            },
-          ]}
-        />
-      </View>
-
-      <View style={styles.topRow}>
-        <View style={styles.stepBadge}>
-          <Text style={styles.stepBadgeText}>
-            Korak <Text style={{ color: colors.logoGreen, fontWeight: '600' }}>0{step}</Text>
-            <Text style={{ color: colors.textFaint }}> / 0{TOTAL_STEPS}</Text>
-          </Text>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={styles.progressTrack}>
+          <Animated.View
+            style={[
+              styles.progressFill,
+              {
+                width: progressAnim.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: ['0%', '100%'],
+                }),
+              },
+            ]}
+          />
         </View>
-        <TouchableOpacity style={styles.discardBtn} onPress={() => router.back()}>
-          <CloseIcon size={16} />
-          <Text style={styles.discardText}>Odbaci</Text>
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 140 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Animated.View style={{ opacity: stepAnim }}>
-          {step === 1 && <StepSport form={form} set={set} showAllSports={showAllSports} setShowAllSports={setShowAllSports} sportSearch={sportSearch} setSportSearch={setSportSearch} />}
-          {step === 2 && <StepTitle form={form} set={set} />}
-          {step === 3 && <StepDateTime form={form} set={set} />}
-          {step === 4 && <StepCity form={form} set={set} />}
-          {step === 5 && <StepSkill form={form} set={set} />}
-          {step === 6 && <StepSlots form={form} set={set} perPlayer={perPlayer} showToast={showToast} />}
-          {step === 7 && <StepReview form={form} set={set} perPlayer={perPlayer} goTo={goTo} error={submitError} />}
-        </Animated.View>
-      </ScrollView>
-
-      <View style={styles.bottomBar}>
-        <View style={styles.dotsRow}>
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.progressDot,
-                {
-                  width: i + 1 === step ? 18 : 6,
-                  backgroundColor: i + 1 <= step ? colors.logoGreen : colors.bg3,
-                },
-              ]}
-            />
-          ))}
-        </View>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity onPress={() => goTo(step - 1)} disabled={step === 1} style={[styles.backBtn, step === 1 && { opacity: 0.4 }]}>
-            <Text style={styles.backBtnText}>Nazad</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleNext} disabled={!canNext || loading} style={[styles.nextBtn, (!canNext || loading) && { opacity: 0.4 }]}>
-            <Text style={styles.nextBtnText}>{loading ? '...' : step === TOTAL_STEPS ? 'Objavi' : 'Dalje'}</Text>
+        <View style={styles.topRow}>
+          <View style={styles.stepBadge}>
+            <Text style={styles.stepBadgeText}>
+              Korak <Text style={{ color: colors.logoGreen, fontWeight: '600' }}>0{step}</Text>
+              <Text style={{ color: colors.textFaint }}> / 0{TOTAL_STEPS}</Text>
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.discardBtn} onPress={() => router.back()}>
+            <CloseIcon size={16} />
+            <Text style={styles.discardText}>Odbaci</Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      {toast && (
-        <View style={styles.toastWrap}>
-          <Toast toast={toast} onDismiss={dismissToast} />
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 140 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Animated.View style={{ opacity: stepAnim }}>
+            {step === 1 && <StepSport form={form} set={set} showAllSports={showAllSports} setShowAllSports={setShowAllSports} sportSearch={sportSearch} setSportSearch={setSportSearch} />}
+            {step === 2 && <StepTitle form={form} set={set} />}
+            {step === 3 && <StepDateTime form={form} set={set} />}
+            {step === 4 && <StepCity form={form} set={set} />}
+            {step === 5 && <StepSkill form={form} set={set} />}
+            {step === 6 && <StepSlots form={form} set={set} perPlayer={perPlayer} showToast={showToast} />}
+            {step === 7 && <StepReview form={form} set={set} perPlayer={perPlayer} goTo={goTo} error={submitError} />}
+          </Animated.View>
+        </ScrollView>
+
+        <View style={styles.bottomBar}>
+          <View style={styles.dotsRow}>
+            {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.progressDot,
+                  {
+                    width: i + 1 === step ? 18 : 6,
+                    backgroundColor: i + 1 <= step ? colors.logoGreen : colors.bg3,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity onPress={() => goTo(step - 1)} disabled={step === 1} style={[styles.backBtn, step === 1 && { opacity: 0.4 }]}>
+              <Text style={styles.backBtnText}>Nazad</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleNext} disabled={!canNext || loading} style={[styles.nextBtn, (!canNext || loading) && { opacity: 0.4 }]}>
+              <Text style={styles.nextBtnText}>{loading ? '...' : step === TOTAL_STEPS ? 'Objavi' : 'Dalje'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      )}
-    </KeyboardAvoidingView>
+
+        {toast && (
+          <View style={styles.toastWrap}>
+            <Toast toast={toast} onDismiss={dismissToast} />
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

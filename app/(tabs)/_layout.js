@@ -27,10 +27,9 @@ export default function TabsLayout() {
         name="post"
         options={{
           title: 'Objavi',
-          tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <View style={[styles.postIconWrap, focused && styles.postIconWrapActive]}>
-              <PlusIcon size={20} color={focused ? '#000' : colors.text} />
+              <PlusIcon size={16} color={focused ? '#000' : colors.text} />
             </View>
           ),
         }}
@@ -71,13 +70,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   postIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: colors.bg3,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -20,
     borderWidth: 1,
     borderColor: colors.line2,
   },
@@ -86,8 +84,8 @@ const styles = StyleSheet.create({
     borderColor: colors.logoGreen,
     shadowColor: colors.logoGreen,
     shadowOpacity: 0.5,
-    shadowRadius: 10,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 6,
+    elevation: 4,
   },
 });
