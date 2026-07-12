@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { getUserCreatedTermins, getUserJoinedTermins, getUserProfile } from '../../lib/api';
 import MyTerminsScreen from '../../screens/MyTerminsScreen';
 
@@ -23,9 +24,11 @@ export default function MyTermins() {
     setRefreshing(false);
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   return <MyTerminsScreen createdData={createdData} joinedData={joinedData} viewerCurrency={viewerCurrency} loading={loading} onRefresh={() => load(true)} refreshing={refreshing} />;
 }

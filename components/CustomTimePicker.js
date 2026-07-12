@@ -1,95 +1,149 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useState } from 'react';
-import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, radius } from '../theme/colors';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { colors } from '../theme/colors';
 
-function timeToDate(timeStr) {
-  const d = new Date();
-  if (timeStr) {
-    const [h, m] = timeStr.split(':').map(Number);
-    d.setHours(h || 0, m || 0, 0, 0);
-  }
-  return d;
+const ITEM_HEIGHT = 48;
+
+function ClockIcon({ size = 20, color = colors.logoGreen }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Circle cx="12" cy="12" r="9" />
+      <Path d="M12 7v5l3 3" />
+    </Svg>
+  );
 }
 
-export default function CustomTimePicker({ value, onChange, step = 30 }) {
-  const [showPicker, setShowPicker] = useState(false);
-  const dateObj = timeToDate(value);
-
-  const handleValueChange = (selectedDate) => {
-    if (Platform.OS === 'android') setShowPicker(false);
-    if (selectedDate) {
-      const hh = String(selectedDate.getHours()).padStart(2, '0');
-      const mm = String(selectedDate.getMinutes()).padStart(2, '0');
-      onChange(`${hh}:${mm}`);
+function buildTimes() {
+  const times = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      times.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
     }
-  };
+  }
+  return times;
+}
 
-  const handleDismiss = () => {
-    setShowPicker(false);
-  };
+function nearestUpcomingTime(times) {
+  const now = new Date();
+  let h = now.getHours();
+  let m = now.getMinutes();
+  if (m > 0 && m <= 30) {
+    m = 30;
+  } else if (m > 30) {
+    m = 0;
+    h = (h + 1) % 24;
+  }
+  const target = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  return times.indexOf(target);
+}
+
+export default function CustomTimePicker({ value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const scrollRef = useRef(null);
+  const times = useMemo(buildTimes, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const index = value ? times.indexOf(value) : nearestUpcomingTime(times);
+    if (index !== -1) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: index * ITEM_HEIGHT, animated: false });
+      }, 10);
+    }
+  }, [isOpen, value, times]);
 
   return (
     <>
-      <TouchableOpacity style={styles.trigger} onPress={() => setShowPicker(true)} activeOpacity={0.85}>
-        <Text style={[styles.triggerText, value && { color: colors.logoGreen, fontWeight: '600' }]}>{value || '--:--'}</Text>
+      <TouchableOpacity onPress={() => setIsOpen(true)} style={[styles.trigger, isOpen && { borderColor: colors.logoGreen }]} activeOpacity={0.85}>
+        <Text style={[styles.triggerText, value && { color: colors.text }]}>{value || 'Odaberi vrijeme'}</Text>
+        <ClockIcon size={20} />
       </TouchableOpacity>
 
-      {showPicker && Platform.OS === 'android' && <DateTimePicker value={dateObj} mode="time" display="default" is24Hour onValueChange={handleValueChange} onDismiss={handleDismiss} />}
+      <Modal visible={isOpen} transparent animationType="fade" onRequestClose={() => setIsOpen(false)}>
+        <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
+          <View style={styles.overlay} />
+        </TouchableWithoutFeedback>
 
-      {Platform.OS === 'ios' && (
-        <Modal visible={showPicker} transparent animationType="slide">
-          <View style={styles.overlay}>
-            <View style={styles.sheet}>
-              <DateTimePicker value={dateObj} mode="time" display="spinner" is24Hour minuteInterval={step} onValueChange={handleValueChange} onDismiss={handleDismiss} textColor={colors.text} style={{ backgroundColor: colors.bg2 }} />
-              <TouchableOpacity style={styles.doneBtn} onPress={() => setShowPicker(false)}>
-                <Text style={styles.doneBtnText}>Gotovo</Text>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.sheet}>
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>Odaberi vrijeme</Text>
           </View>
-        </Modal>
-      )}
+          <ScrollView ref={scrollRef} style={{ maxHeight: 320 }} showsVerticalScrollIndicator={false}>
+            {times.map((t) => {
+              const selected = value === t;
+              return (
+                <TouchableOpacity
+                  key={t}
+                  onPress={() => {
+                    onChange(t);
+                    setIsOpen(false);
+                  }}
+                  style={[styles.timeRow, selected && { backgroundColor: colors.logoGreen }]}
+                >
+                  <Text style={[styles.timeText, selected && { color: '#000', fontWeight: '600' }]}>{t}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </Modal>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   trigger: {
-    height: 56,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 55,
     paddingHorizontal: 16,
-    borderRadius: radius.lg,
+    borderRadius: 12,
     backgroundColor: colors.bg2,
     borderWidth: 1,
-    borderColor: colors.line2,
+    borderColor: colors.borderColor,
   },
   triggerText: {
     color: colors.textSec,
-    fontSize: 18,
-    letterSpacing: -0.5,
+    fontSize: 16,
   },
   overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
   sheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: colors.bg2,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingBottom: 20,
+    paddingBottom: 24,
+    overflow: 'hidden',
   },
-  doneBtn: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingVertical: 14,
-    borderRadius: radius.lg,
-    backgroundColor: colors.logoGreen,
-    alignItems: 'center',
+  sheetHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 12,
   },
-  doneBtnText: {
-    color: '#000',
-    fontWeight: '600',
-    fontSize: 14,
+  sheetTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  timeRow: {
+    height: ITEM_HEIGHT,
+    justifyContent: 'center',
+    paddingLeft: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  timeText: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 15,
+    fontWeight: '500',
   },
 });

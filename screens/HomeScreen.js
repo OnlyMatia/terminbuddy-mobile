@@ -1,3 +1,4 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -121,9 +122,17 @@ export default function HomeScreen({ userProfile }) {
     setLoadingMore(false);
   }, [loadingMore, hasMore, searchQuery, termini.length, filters.cities, selectedSport, dateFilter]);
 
-  useEffect(() => {
-    fetchTermins(0);
-  }, []);
+  const refreshRef = useRef(null);
+  refreshRef.current = () => {
+    if (isSearchActive) handleSearch();
+    else fetchTermins(0);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshRef.current?.();
+    }, []),
+  );
 
   useEffect(() => {
     if (isFirstRender.current) {

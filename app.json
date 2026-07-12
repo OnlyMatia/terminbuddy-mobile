@@ -5,14 +5,14 @@
     "scheme": "terminbuddy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon2.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "plugins": ["expo-router", "@react-native-community/datetimepicker"],
+    "plugins": ["expo-router"],
     "android": {
       "package": "com.matija.terminbuddy",
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon2.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a0c09"
       }
     }
