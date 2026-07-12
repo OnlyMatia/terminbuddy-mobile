@@ -5,15 +5,14 @@
     "scheme": "terminbuddy",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "plugins": [
-      "expo-router",
-      "@react-native-community/datetimepicker"
-    ],
+    "plugins": ["expo-router", "@react-native-community/datetimepicker"],
     "android": {
       "package": "com.matija.terminbuddy",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a0c09"
       }
     }
