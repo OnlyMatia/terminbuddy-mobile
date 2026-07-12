@@ -315,7 +315,7 @@ export default function OnboardingScreen({ user, editMode = false, onFinish, onE
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <View style={styles.topBar}>
           <View style={styles.brandRow}>
             <BLogo size={26} />

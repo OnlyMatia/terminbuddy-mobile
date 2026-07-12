@@ -2,7 +2,7 @@ import { BlurView } from 'expo-blur';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Modal, PanResponder, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { colors } from '../theme/colors';
-import { ArrowLeftIcon, CloseIcon } from './Icons';
+import { ArrowLeftIcon, TrashIcon } from './Icons';
 
 const MONTHS = ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj', 'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac'];
 const WEEKDAYS = ['pon', 'uto', 'sri', 'čet', 'pet', 'sub', 'ned'];
@@ -139,19 +139,19 @@ export function DateFilterModal({ visible, onClose, value, onApply }) {
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
-        <BlurView intensity={40} tint="dark" style={styles.overlay} />
+        <View style={styles.overlay}>
+          <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+        </View>
       </TouchableWithoutFeedback>
 
       <Animated.View style={[styles.panel, { transform: [{ translateY: Animated.add(slideAnim, dragY) }] }]}>
         <View {...panResponder.panHandlers}>
           <View style={styles.handle} />
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleReset}>
-              <Text style={styles.resetText}>Očisti</Text>
-            </TouchableOpacity>
             <Text style={styles.headerTitle}>Datum</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <CloseIcon size={16} />
+            <TouchableOpacity onPress={handleReset} style={styles.resetRow}>
+              <TrashIcon size={14} color="#f87171" />
+              <Text style={styles.resetText}>Očisti</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -219,6 +219,7 @@ export function DateFilterModal({ visible, onClose, value, onApply }) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
   panel: {
     position: 'absolute',
@@ -246,6 +247,11 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 16,
   },
+  resetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
   resetText: {
     color: '#f87171',
     fontSize: 14,
@@ -253,16 +259,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: colors.text,
-    fontSize: 17,
-    fontWeight: '600',
-  },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.bg3,
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.4,
   },
   calendarCard: {
     backgroundColor: colors.bg3,

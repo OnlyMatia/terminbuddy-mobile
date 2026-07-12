@@ -34,17 +34,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
     borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   value: {
     color: colors.logoGreen,
     fontSize: 22,
     letterSpacing: -0.5,
     marginBottom: 2,
+    textAlign: 'center',
   },
   label: {
     color: colors.textSec,
     fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: 1,
+    textAlign: 'center',
   },
 });

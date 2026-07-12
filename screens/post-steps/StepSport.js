@@ -56,7 +56,7 @@ export default function StepSport({ form, set, showAllSports, setShowAllSports, 
             <Text style={styles.backText}>Natrag</Text>
           </TouchableOpacity>
 
-          <ScrollView style={{ maxHeight: 400 }}>
+          <ScrollView style={{ maxHeight: 400 }} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
             <View style={styles.gridSmall}>
               {filteredAllSports.map((s) => {
                 const selected = form.sport === s.name;

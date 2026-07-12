@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SPORT_COLORS, days } from '../data/data';
 import { colors } from '../theme/colors';
 import { convertCurrency, formatPrice } from '../utils/utils';
@@ -46,21 +46,15 @@ export default function TerminCard({ termin, viewerCurrency = 'EUR', past = fals
   const locationText = termin.playground ? `${termin.playground}, ${termin.city}` : termin.city;
 
   return (
-    <TouchableOpacity onPress={() => router.push(`/termin/${termin.id}`)} style={[styles.card, past && { opacity: 0.5 }]} activeOpacity={0.85}>
+    <Pressable onPress={() => router.push(`/termin/${termin.id}`)} style={[styles.card, past && { opacity: 0.55 }]} android_ripple={null}>
       <View style={styles.topRow}>
         <View style={[styles.sportBadge, { backgroundColor: `${sportColor}1A` }]}>
           <View style={[styles.sportDot, { backgroundColor: sportColor }]} />
           <Text style={[styles.sportBadgeText, { color: sportColor }]}>{termin.sport}</Text>
         </View>
-        {past ? (
-          <View style={styles.pastBadge}>
-            <Text style={styles.pastBadgeText}>Završeno</Text>
-          </View>
-        ) : (
-          <Text style={styles.dateLabel}>
-            {getDateLabel(termin.event_date)} · {formatTime(termin.event_time)}
-          </Text>
-        )}
+        <Text style={styles.dateLabel}>
+          {getDateLabel(termin.event_date)} · {formatTime(termin.event_time)}
+        </Text>
       </View>
 
       <Text style={styles.title} numberOfLines={1}>
@@ -112,15 +106,15 @@ export default function TerminCard({ termin, viewerCurrency = 'EUR', past = fals
       </View>
 
       <View style={styles.bottomRow}>
-        <View style={styles.creatorRow}>
+        <Pressable style={styles.creatorRow} onPress={() => creatorName && router.push(`/user/${creatorName}`)} android_ripple={null}>
           <View style={styles.avatarCircle}>{creatorAvatar ? <Image source={{ uri: creatorAvatar }} style={styles.avatarImg} /> : <Text style={styles.avatarInitials}>{getInitials(creatorName)}</Text>}</View>
           <Text style={styles.creatorName} numberOfLines={1}>
             {creatorName || 'Korisnik'}
           </Text>
-        </View>
+        </Pressable>
         <ChevronRightIcon size={16} />
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -155,17 +149,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-  },
-  pastBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    backgroundColor: 'rgba(239,68,68,0.1)',
-  },
-  pastBadgeText: {
-    color: '#f87171',
-    fontSize: 11,
-    fontWeight: '600',
   },
   dateLabel: {
     color: colors.textSec,

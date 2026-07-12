@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { approveJoinRequest, rejectJoinRequest } from '../lib/api';
@@ -5,6 +6,7 @@ import { colors } from '../theme/colors';
 import { UserIcon } from './Icons';
 
 export default function RequestList({ requests, terminId, onUpdated }) {
+  const router = useRouter();
   const [processing, setProcessing] = useState(null);
   const [localRequests, setLocalRequests] = useState(requests);
 
@@ -24,7 +26,7 @@ export default function RequestList({ requests, terminId, onUpdated }) {
       <View style={{ gap: 10 }}>
         {localRequests.map((req) => (
           <View key={req.id} style={styles.row}>
-            <View style={styles.userRow}>
+            <TouchableOpacity style={styles.userRow} onPress={() => req.profiles?.username && router.push(`/user/${req.profiles.username}`)} activeOpacity={0.8}>
               <View style={styles.avatarCircle}>{req.profiles?.avatar_url ? <Image source={{ uri: req.profiles.avatar_url }} style={styles.avatarImg} /> : <UserIcon size={18} color="rgba(0,0,0,0.4)" />}</View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={styles.username} numberOfLines={1}>
@@ -34,7 +36,7 @@ export default function RequestList({ requests, terminId, onUpdated }) {
                   @{req.profiles?.username}
                 </Text>
               </View>
-            </View>
+            </TouchableOpacity>
 
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <TouchableOpacity disabled={processing === req.id} onPress={() => handleAction(req.id, () => rejectJoinRequest(req.id))} style={styles.rejectBtn}>

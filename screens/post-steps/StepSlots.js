@@ -44,7 +44,7 @@ export default function StepSlots({ form, set, perPlayer, showToast = () => {} }
   };
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
       <StepHeading title="Koliko igrača?" desc="Postavi veličinu ekipe i cijenu. TerminBuddy ravnomjerno dijeli trošak terena među prijavljenim igračima." />
 
       <View style={styles.counterCard}>

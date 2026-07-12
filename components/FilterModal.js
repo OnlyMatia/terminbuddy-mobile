@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Modal, PanResponder, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { citiesByCountry } from '../data/data';
 import { colors } from '../theme/colors';
-import { CloseIcon } from './Icons';
 
 const SORT_OPTIONS = [
   { label: 'Najnovije', value: 'Najnoviji' },
@@ -72,19 +71,18 @@ export function FilterModal({ visible, onClose, filters, onApply, userCountry })
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
-        <BlurView intensity={40} tint="dark" style={styles.overlay} />
+        <View style={styles.overlay}>
+          <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+        </View>
       </TouchableWithoutFeedback>
 
       <Animated.View style={[styles.panel, { transform: [{ translateY: Animated.add(slideAnim, dragY) }] }]}>
         <View {...panResponder.panHandlers}>
           <View style={styles.handle} />
           <View style={styles.header}>
+            <Text style={styles.headerTitle}>Filteri</Text>
             <TouchableOpacity onPress={handleReset}>
               <Text style={styles.resetText}>Očisti</Text>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Filteri</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <CloseIcon size={16} />
             </TouchableOpacity>
           </View>
         </View>
@@ -149,6 +147,7 @@ export function FilterModal({ visible, onClose, filters, onApply, userCountry })
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
   panel: {
     position: 'absolute',
@@ -183,16 +182,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: colors.text,
-    fontSize: 17,
-    fontWeight: '600',
-  },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.bg3,
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.4,
   },
   sectionLabel: {
     color: colors.textSec,

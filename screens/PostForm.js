@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -52,6 +52,44 @@ export default function PostForm({ userProfile, onCreateTermin }) {
   });
 
   const set = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const resetForm = useCallback(() => {
+    setStep(1);
+    setLoading(false);
+    setSuccess(false);
+    setCreatedTerminId(null);
+    setShowAllSports(false);
+    setSportSearch('');
+    setToast(null);
+    setSubmitError(null);
+    setForm({
+      sport: '',
+      title: '',
+      country: defaultCountry,
+      city: defaultCity,
+      playground: '',
+      description: '',
+      date: '',
+      time: '',
+      skill_level: 'Mješovita',
+      max_players: 10,
+      current_players: 0,
+      price: 50,
+      currency: defaultCurrency,
+      priceType: 'paid',
+      auto_accept: false,
+    });
+    stepAnim.setValue(1);
+    progressAnim.setValue((1 / TOTAL_STEPS) * 100);
+  }, [defaultCountry, defaultCity, defaultCurrency]);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (success) resetForm();
+      };
+    }, [success, resetForm]),
+  );
 
   const showToast = useCallback((message) => {
     setToast({ message, id: Date.now() });
@@ -168,7 +206,7 @@ export default function PostForm({ userProfile, onCreateTermin }) {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <View style={styles.progressTrack}>
           <Animated.View
             style={[

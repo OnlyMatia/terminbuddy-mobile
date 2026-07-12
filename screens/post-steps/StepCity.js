@@ -56,7 +56,7 @@ export default function StepCity({ form, set }) {
             <TextInput placeholder="Traži grad ili upiši vlastiti..." placeholderTextColor={colors.textFaint} maxLength={15} value={citySearch} onChangeText={setCitySearch} style={styles.searchInput} />
           </View>
 
-          <ScrollView style={{ maxHeight: 380 }}>
+          <ScrollView style={{ maxHeight: 380 }} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
             <View style={styles.cityGrid}>
               {filteredCities.map((c) => (
                 <TouchableOpacity

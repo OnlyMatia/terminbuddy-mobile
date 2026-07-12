@@ -16,14 +16,17 @@ export default function CustomTimePicker({ value, onChange, step = 30 }) {
   const [showPicker, setShowPicker] = useState(false);
   const dateObj = timeToDate(value);
 
-  const handleChange = (event, selectedDate) => {
+  const handleValueChange = (selectedDate) => {
     if (Platform.OS === 'android') setShowPicker(false);
-    if (event.type === 'dismissed') return;
     if (selectedDate) {
       const hh = String(selectedDate.getHours()).padStart(2, '0');
       const mm = String(selectedDate.getMinutes()).padStart(2, '0');
       onChange(`${hh}:${mm}`);
     }
+  };
+
+  const handleDismiss = () => {
+    setShowPicker(false);
   };
 
   return (
@@ -32,13 +35,13 @@ export default function CustomTimePicker({ value, onChange, step = 30 }) {
         <Text style={[styles.triggerText, value && { color: colors.logoGreen, fontWeight: '600' }]}>{value || '--:--'}</Text>
       </TouchableOpacity>
 
-      {showPicker && Platform.OS === 'android' && <DateTimePicker value={dateObj} mode="time" display="default" is24Hour onChange={handleChange} />}
+      {showPicker && Platform.OS === 'android' && <DateTimePicker value={dateObj} mode="time" display="default" is24Hour onValueChange={handleValueChange} onDismiss={handleDismiss} />}
 
       {Platform.OS === 'ios' && (
         <Modal visible={showPicker} transparent animationType="slide">
           <View style={styles.overlay}>
             <View style={styles.sheet}>
-              <DateTimePicker value={dateObj} mode="time" display="spinner" is24Hour minuteInterval={step} onChange={handleChange} textColor={colors.text} style={{ backgroundColor: colors.bg2 }} />
+              <DateTimePicker value={dateObj} mode="time" display="spinner" is24Hour minuteInterval={step} onValueChange={handleValueChange} onDismiss={handleDismiss} textColor={colors.text} style={{ backgroundColor: colors.bg2 }} />
               <TouchableOpacity style={styles.doneBtn} onPress={() => setShowPicker(false)}>
                 <Text style={styles.doneBtnText}>Gotovo</Text>
               </TouchableOpacity>

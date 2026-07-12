@@ -207,7 +207,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
             {visiblePlayers.map((player) => {
               const showRate = canRate(player.id);
               return (
-                <TouchableOpacity key={player.id} onPress={() => router.push(`/profile/${player.username}`)} style={styles.playerRow} activeOpacity={0.8}>
+                <TouchableOpacity key={player.id} onPress={() => router.push(`/user/${player.username}`)} style={styles.playerRow} activeOpacity={0.8}>
                   <View style={styles.avatarCircle}>{player.avatar_url ? <Image source={{ uri: player.avatar_url }} style={styles.avatarImg} /> : <Text style={styles.avatarInitials}>{getInitials(player.username)}</Text>}</View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={styles.playerUsername} numberOfLines={1}>
@@ -243,7 +243,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
           )}
         </View>
 
-        <TouchableOpacity onPress={() => router.push(`/chats?termin=${termin.id}`)} style={styles.sectionCardNoPad} activeOpacity={hasAccess ? 0.85 : 1} disabled={!hasAccess}>
+        <TouchableOpacity onPress={() => router.push(`/chat/${termin.id}`)} style={styles.sectionCardNoPad} activeOpacity={hasAccess ? 0.85 : 1} disabled={!hasAccess}>
           <View style={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 10 }}>
             <Text style={styles.sectionTitle}>Chat ekipe</Text>
           </View>
@@ -278,7 +278,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
 
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitleSmall}>Organizator</Text>
-          <TouchableOpacity onPress={() => router.push(`/profile/${creatorProfile?.username}`)} style={styles.creatorRow} activeOpacity={0.8}>
+          <TouchableOpacity onPress={() => router.push(`/user/${creatorProfile?.username}`)} style={styles.creatorRow} activeOpacity={0.8}>
             <View style={styles.avatarCircle}>{creatorProfile?.avatar_url ? <Image source={{ uri: creatorProfile.avatar_url }} style={styles.avatarImg} /> : <Text style={styles.avatarInitials}>{getInitials(creatorProfile?.username)}</Text>}</View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.creatorName}>{creatorProfile?.username || 'Korisnik'}</Text>

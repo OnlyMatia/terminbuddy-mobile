@@ -50,9 +50,9 @@ export function BLogo({ size = 28, color = colors.text }) {
 
 export function UserIcon({ size = 20, color = colors.text }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-      <Path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-      <Circle cx="12" cy="7" r="4" />
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+      <Path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
     </Svg>
   );
 }
@@ -123,27 +123,48 @@ export function EditIcon({ size = 12, color = colors.textFaint }) {
 
 export function HomeIcon({ size = 22, color = colors.text }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-      <Path d="M3 11.5L12 4l9 7.5" />
-      <Path d="M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10" />
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+      <Path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+      <Path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
     </Svg>
   );
 }
 
 export function PlusIcon({ size = 20, color = colors.text }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5}>
-      <Path d="M12 5v14M5 12h14" />
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M8.56 3.69a9 9 0 0 0 -2.92 1.95" />
+      <Path d="M3.69 8.56a9 9 0 0 0 -.69 3.44" />
+      <Path d="M3.69 15.44a9 9 0 0 0 1.95 2.92" />
+      <Path d="M8.56 20.31a9 9 0 0 0 3.44 .69" />
+      <Path d="M15.44 20.31a9 9 0 0 0 2.92 -1.95" />
+      <Path d="M20.31 15.44a9 9 0 0 0 .69 -3.44" />
+      <Path d="M20.31 8.56a9 9 0 0 0 -1.95 -2.92" />
+      <Path d="M15.44 3.69a9 9 0 0 0 -3.44 -.69" />
+      <Path d="M9 12h6" />
+      <Path d="M12 9v6" />
     </Svg>
   );
 }
 
 export function CalendarIcon({ size = 22, color = colors.text }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M3 10h18" />
       <Path d="M16 2v4M8 2v4" />
       <Path d="M5 4h14a1 1 0 011 1v15a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" />
+    </Svg>
+  );
+}
+
+export function CategoryIcon({ size = 22, color = colors.text }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M4 4h6v6h-6l0 -6" />
+      <Path d="M14 4h6v6h-6l0 -6" />
+      <Path d="M4 14h6v6h-6l0 -6" />
+      <Path d="M14 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
     </Svg>
   );
 }
@@ -167,9 +188,9 @@ export function First10AwardIcon({ size = 24, color = '#fff' }) {
 
 export function SearchIcon({ size = 18, color = colors.textSec }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-      <Circle cx="11" cy="11" r="7" />
-      <Path d="M21 21l-4.3-4.3" />
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+      <Path d="M21 21l-6 -6" />
     </Svg>
   );
 }
@@ -203,6 +224,23 @@ export function ChevronRightIcon({ size = 18, color = colors.textSec }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
       <Path d="M9 18l6-6-6-6" />
+    </Svg>
+  );
+}
+
+export function MessageCircleIcon({ size = 22, color = colors.text }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1" />
+    </Svg>
+  );
+}
+
+export function SendIcon({ size = 18, color = '#000' }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M10 14l11 -11" />
+      <Path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
     </Svg>
   );
 }

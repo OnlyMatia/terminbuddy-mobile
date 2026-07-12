@@ -9,13 +9,16 @@ export default function CustomDatePicker({ value, onChange }) {
   const [showPicker, setShowPicker] = useState(false);
   const dateObj = value ? new Date(value) : new Date();
 
-  const handleChange = (event, selectedDate) => {
+  const handleValueChange = (selectedDate) => {
     if (Platform.OS === 'android') setShowPicker(false);
-    if (event.type === 'dismissed') return;
     if (selectedDate) {
       const iso = selectedDate.toISOString().split('T')[0];
       onChange(iso);
     }
+  };
+
+  const handleDismiss = () => {
+    setShowPicker(false);
   };
 
   return (
@@ -25,13 +28,13 @@ export default function CustomDatePicker({ value, onChange }) {
         <Text style={[styles.triggerText, value && { color: colors.text }]}>{value ? formatDisplayDate(value) : 'Odaberi datum'}</Text>
       </TouchableOpacity>
 
-      {showPicker && Platform.OS === 'android' && <DateTimePicker value={dateObj} mode="date" display="default" minimumDate={new Date()} onChange={handleChange} />}
+      {showPicker && Platform.OS === 'android' && <DateTimePicker value={dateObj} mode="date" display="default" minimumDate={new Date()} onValueChange={handleValueChange} onDismiss={handleDismiss} />}
 
       {Platform.OS === 'ios' && (
         <Modal visible={showPicker} transparent animationType="slide">
           <View style={styles.overlay}>
             <View style={styles.sheet}>
-              <DateTimePicker value={dateObj} mode="date" display="spinner" minimumDate={new Date()} onChange={handleChange} textColor={colors.text} style={{ backgroundColor: colors.bg2 }} />
+              <DateTimePicker value={dateObj} mode="date" display="spinner" minimumDate={new Date()} onValueChange={handleValueChange} onDismiss={handleDismiss} textColor={colors.text} style={{ backgroundColor: colors.bg2 }} />
               <TouchableOpacity style={styles.doneBtn} onPress={() => setShowPicker(false)}>
                 <Text style={styles.doneBtnText}>Gotovo</Text>
               </TouchableOpacity>

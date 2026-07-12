@@ -187,6 +187,8 @@ export default function HomeScreen({ userProfile }) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.4}
         ListHeaderComponent={

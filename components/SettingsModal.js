@@ -1,9 +1,9 @@
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Dimensions, Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Modal, PanResponder, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { colors, radius } from '../theme/colors';
-import { CloseIcon } from './Icons';
 
 const CURRENCIES = [
   { value: 'KM', label: 'BAM (KM)' },
@@ -16,6 +16,24 @@ export default function SettingsModal({ visible, onClose, user, onEditProfile, o
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const slideAnim = useRef(new Animated.Value(SCREEN_H)).current;
+  const dragY = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 4 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) dragY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          onClose();
+        } else {
+          Animated.spring(dragY, { toValue: 0, useNativeDriver: true, bounciness: 0 }).start();
+        }
+      },
+    }),
+  ).current;
 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -26,6 +44,7 @@ export default function SettingsModal({ visible, onClose, user, onEditProfile, o
   const [savingEmail, setSavingEmail] = useState(false);
 
   useEffect(() => {
+    if (visible) dragY.setValue(0);
     Animated.timing(slideAnim, {
       toValue: visible ? 0 : SCREEN_H,
       duration: 300,
@@ -81,16 +100,17 @@ export default function SettingsModal({ visible, onClose, user, onEditProfile, o
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay} />
+        <View style={styles.overlay}>
+          <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+        </View>
       </TouchableWithoutFeedback>
 
-      <Animated.View style={[styles.panel, { transform: [{ translateY: slideAnim }] }]}>
-        <View style={styles.handle} />
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Postavke</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <CloseIcon size={16} />
-          </TouchableOpacity>
+      <Animated.View style={[styles.panel, { transform: [{ translateY: Animated.add(slideAnim, dragY) }] }]}>
+        <View {...panResponder.panHandlers}>
+          <View style={styles.handle} />
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Postavke</Text>
+          </View>
         </View>
 
         <View style={styles.body}>
@@ -185,7 +205,7 @@ export default function SettingsModal({ visible, onClose, user, onEditProfile, o
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
   panel: {
     position: 'absolute',
@@ -207,26 +227,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 12,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 14,
     paddingBottom: 16,
   },
   headerTitle: {
     color: colors.text,
-    fontSize: 17,
-    fontWeight: '600',
-  },
-  closeBtn: {
-    position: 'absolute',
-    right: 16,
-    top: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.bg3,
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.4,
   },
   body: {
     paddingHorizontal: 16,
