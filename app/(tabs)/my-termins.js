@@ -1,9 +1,11 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useNotifications } from '../../context/NotificationContext';
 import { getUserCreatedTermins, getUserJoinedTermins, getUserProfile } from '../../lib/api';
 import MyTerminsScreen from '../../screens/MyTerminsScreen';
 
 export default function MyTermins() {
+  const { clearTerminNotifs } = useNotifications();
   const [createdData, setCreatedData] = useState([]);
   const [joinedData, setJoinedData] = useState([]);
   const [viewerCurrency, setViewerCurrency] = useState('EUR');
@@ -27,7 +29,8 @@ export default function MyTermins() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load]),
+      clearTerminNotifs();
+    }, [load, clearTerminNotifs]),
   );
 
   return <MyTerminsScreen createdData={createdData} joinedData={joinedData} viewerCurrency={viewerCurrency} loading={loading} onRefresh={() => load(true)} refreshing={refreshing} />;

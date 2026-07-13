@@ -1,9 +1,12 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { CalendarIcon, HomeIcon, MessageCircleIcon, PlusIcon, UserIcon } from '../../components/Icons';
+import { useNotifications } from '../../context/NotificationContext';
 import { colors } from '../../theme/colors';
 
 export default function TabsLayout() {
+  const { hasTerminNotifs, hasChatUnread } = useNotifications();
+
   return (
     <Tabs
       screenOptions={{
@@ -35,6 +38,8 @@ export default function TabsLayout() {
         options={{
           title: 'Moji termini',
           tabBarIcon: ({ color }) => <CalendarIcon size={22} color={color} />,
+          tabBarBadge: hasTerminNotifs ? '' : undefined,
+          tabBarBadgeStyle: styles.dotBadge,
         }}
       />
       <Tabs.Screen
@@ -42,6 +47,8 @@ export default function TabsLayout() {
         options={{
           title: 'Poruke',
           tabBarIcon: ({ color }) => <MessageCircleIcon size={22} color={color} />,
+          tabBarBadge: hasChatUnread ? '' : undefined,
+          tabBarBadgeStyle: styles.dotBadge,
         }}
       />
       <Tabs.Screen
@@ -71,5 +78,14 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
     marginTop: 2,
+  },
+  dotBadge: {
+    backgroundColor: colors.logoGreen,
+    minWidth: 10,
+    maxWidth: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 3,
+    marginLeft: 6,
   },
 });

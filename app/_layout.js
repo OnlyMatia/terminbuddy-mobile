@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { NotificationProvider } from '../context/NotificationContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { colors } from '../theme/colors';
 
@@ -55,8 +56,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <ThemeProvider>
-          <StatusBar style="light" />
-          <RootNavigation />
+          <NotificationProvider>
+            <StatusBar style="light" />
+            <RootNavigation />
+          </NotificationProvider>
         </ThemeProvider>
       </AuthProvider>
     </SafeAreaProvider>

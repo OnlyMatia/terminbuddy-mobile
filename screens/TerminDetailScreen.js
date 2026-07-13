@@ -68,7 +68,6 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
   const ratingsGiven = termin.ratings_given || {};
   const serverRated = ratingsGiven[currentUser?.id] || [];
 
-  const creatorProfile = termin.profiles;
   const price = termin.price || 0;
   const terminCurrency = termin.currency || 'EUR';
   const rawPerPlayer = termin.max_players > 0 && price > 0 ? price / termin.max_players : 0;
@@ -76,7 +75,21 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
   const convertedPerPlayer = convertCurrency(rawPerPlayer, terminCurrency, viewerCurrency);
   const skillLevel = termin.skill_level || 'Mješovita';
   const hasAccess = isOwner || isRegistered;
-  const visiblePlayers = showAllPlayers ? registeredProfiles : registeredProfiles.slice(0, 3);
+  const playersWithCreator = (() => {
+    const list = [...registeredProfiles];
+    const creator = termin.profiles;
+    if (creator?.id && !list.some((p) => p.id === creator.id)) {
+      list.unshift({ id: creator.id, username: creator.username, avatar_url: creator.avatar_url });
+    } else if (creator?.id) {
+      const idx = list.findIndex((p) => p.id === creator.id);
+      if (idx > 0) {
+        const [c] = list.splice(idx, 1);
+        list.unshift(c);
+      }
+    }
+    return list;
+  })();
+  const visiblePlayers = showAllPlayers ? playersWithCreator : playersWithCreator.slice(0, 3);
   const isTeamSport = TEAM_SPORTS.includes(sportKey);
   const showTeamsSection = hasAccess && registeredProfiles.length > 0 && isTeamSport;
 
@@ -188,7 +201,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
         )}
 
         {showTeamsSection && (
-          <View style={{ marginBottom: 16 }}>
+          <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
             <TeamsAndResult termin={termin} currentUser={currentUser} isOwner={isOwner} isExpired={isExpired} registeredProfiles={registeredProfiles} />
           </View>
         )}
@@ -206,13 +219,21 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
           <View style={{ paddingHorizontal: 12, paddingBottom: 12, gap: 4 }}>
             {visiblePlayers.map((player) => {
               const showRate = canRate(player.id);
+              const isHost = player.id === termin.creator_id;
               return (
                 <TouchableOpacity key={player.id} onPress={() => router.push(`/user/${player.username}`)} style={styles.playerRow} activeOpacity={0.8}>
                   <View style={styles.avatarCircle}>{player.avatar_url ? <Image source={{ uri: player.avatar_url }} style={styles.avatarImg} /> : <Text style={styles.avatarInitials}>{getInitials(player.username)}</Text>}</View>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={styles.playerUsername} numberOfLines={1}>
-                      {player.username}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={styles.playerUsername} numberOfLines={1}>
+                        {player.username}
+                      </Text>
+                      {isHost && (
+                        <View style={styles.hostBadge}>
+                          <Text style={styles.hostBadgeText}>Organizator</Text>
+                        </View>
+                      )}
+                    </View>
                     <Text style={styles.playerHandle}>@{player.username}</Text>
                   </View>
                   {showRate ? (
@@ -236,9 +257,9 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
             )}
           </View>
 
-          {registeredProfiles.length > 3 && (
+          {playersWithCreator.length > 3 && (
             <TouchableOpacity onPress={() => setShowAllPlayers(!showAllPlayers)} style={{ paddingVertical: 12, alignItems: 'center' }}>
-              <Text style={styles.showMoreText}>{showAllPlayers ? 'Prikaži manje' : `Prikaži sve (${registeredProfiles.length})`}</Text>
+              <Text style={styles.showMoreText}>{showAllPlayers ? 'Prikaži manje' : `Prikaži sve (${playersWithCreator.length})`}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -275,18 +296,6 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
             </View>
           )}
         </TouchableOpacity>
-
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitleSmall}>Organizator</Text>
-          <TouchableOpacity onPress={() => router.push(`/user/${creatorProfile?.username}`)} style={styles.creatorRow} activeOpacity={0.8}>
-            <View style={styles.avatarCircle}>{creatorProfile?.avatar_url ? <Image source={{ uri: creatorProfile.avatar_url }} style={styles.avatarImg} /> : <Text style={styles.avatarInitials}>{getInitials(creatorProfile?.username)}</Text>}</View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={styles.creatorName}>{creatorProfile?.username || 'Korisnik'}</Text>
-              <Text style={styles.playerHandle}>{creatorProfile?.username ? `@${creatorProfile.username}` : ''}</Text>
-            </View>
-            <ChevronRightIcon size={18} />
-          </TouchableOpacity>
-        </View>
       </ScrollView>
 
       {!isExpired && (
@@ -524,6 +533,20 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
     fontWeight: '600',
+    flexShrink: 1,
+  },
+  hostBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    backgroundColor: colors.greenSoft,
+  },
+  hostBadgeText: {
+    color: colors.logoGreen,
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   playerHandle: {
     color: colors.textSec,

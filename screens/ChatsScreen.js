@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircleIcon } from '../components/Icons';
+import { useNotifications } from '../context/NotificationContext';
 import { SPORT_ICONS } from '../data/data';
 import { getUserChatRooms } from '../lib/api';
 import { colors } from '../theme/colors';
@@ -23,6 +24,7 @@ function formatMessageTime(dateStr) {
 
 export default function ChatsScreen() {
   const router = useRouter();
+  const { clearChatUnread } = useNotifications();
   const [rooms, setRooms] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,8 @@ export default function ChatsScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load]),
+      clearChatUnread();
+    }, [load, clearChatUnread]),
   );
 
   return (
