@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, Touchabl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlusIcon } from '../components/Icons';
 import TerminCard from '../components/TerminCard';
+import { useNotifications } from '../context/NotificationContext';
 import { colors, radius } from '../theme/colors';
 
 function isTerminPast(dateStr, timeStr) {
@@ -28,6 +29,7 @@ function sortActiveFirst(list) {
 
 export default function MyTerminsScreen({ createdData, joinedData, viewerCurrency = 'EUR', loading, onRefresh, refreshing }) {
   const router = useRouter();
+  const { unreadTerminIds } = useNotifications();
   const [activeTab, setActiveTab] = useState('created');
 
   const created = useMemo(() => sortActiveFirst(createdData || []), [createdData]);
@@ -86,7 +88,7 @@ export default function MyTerminsScreen({ createdData, joinedData, viewerCurrenc
             </View>
           </View>
         }
-        renderItem={({ item }) => <TerminCard termin={item} viewerCurrency={viewerCurrency} past={isTerminPast(item.event_date, item.event_time)} />}
+        renderItem={({ item }) => <TerminCard termin={item} viewerCurrency={viewerCurrency} past={isTerminPast(item.event_date, item.event_time)} highlight={unreadTerminIds.has(item.id)} />}
         ListEmptyComponent={renderEmpty}
       />
     </SafeAreaView>

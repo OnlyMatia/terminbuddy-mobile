@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNotifications } from '../../context/NotificationContext';
 import { getTerminChatPreview, getTerminDetails, getUserProfile } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import TerminDetailScreen from '../../screens/TerminDetailScreen';
@@ -9,6 +10,7 @@ import { colors } from '../../theme/colors';
 
 export default function TerminDetail() {
   const { id } = useLocalSearchParams();
+  const { clearTerminNotifForId } = useNotifications();
   const [termin, setTermin] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [chatPreview, setChatPreview] = useState([]);
@@ -49,6 +51,10 @@ export default function TerminDetail() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    clearTerminNotifForId(id);
+  }, [id, clearTerminNotifForId]);
 
   useEffect(() => {
     const channel = supabase

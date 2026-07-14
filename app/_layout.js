@@ -6,12 +6,16 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { NotificationProvider } from '../context/NotificationContext';
 import { ThemeProvider } from '../context/ThemeContext';
+import { usePushNotificationSetup, usePushNotificationTapHandler } from '../lib/pushNotifications';
 import { colors } from '../theme/colors';
 
 function RootNavigation() {
   const router = useRouter();
   const segments = useSegments();
   const { session, initializing, onboardingComplete } = useAuth();
+
+  usePushNotificationSetup(session?.user?.id);
+  usePushNotificationTapHandler();
 
   useEffect(() => {
     if (initializing) return;

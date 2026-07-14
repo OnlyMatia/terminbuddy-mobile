@@ -91,3 +91,4 @@ Thumbs.db
 # EAS / Expo credentials (if generated locally)
 #
 credentials.json
+google-services.json

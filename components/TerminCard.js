@@ -27,7 +27,7 @@ function formatTime(timeStr) {
   return timeStr.slice(0, 5) + 'h';
 }
 
-export default function TerminCard({ termin, viewerCurrency = 'EUR', past = false }) {
+export default function TerminCard({ termin, viewerCurrency = 'EUR', past = false, highlight = false }) {
   const router = useRouter();
   const sportKey = termin.sport?.toLowerCase();
   const sportColor = SPORT_COLORS[sportKey] || colors.logoGreen;
@@ -46,7 +46,8 @@ export default function TerminCard({ termin, viewerCurrency = 'EUR', past = fals
   const locationText = termin.playground ? `${termin.playground}, ${termin.city}` : termin.city;
 
   return (
-    <Pressable onPress={() => router.push(`/termin/${termin.id}`)} style={[styles.card, past && { opacity: 0.55 }]} android_ripple={null}>
+    <Pressable onPress={() => router.push(`/termin/${termin.id}`)} style={[styles.card, past && { opacity: 0.75 }]} android_ripple={null}>
+      {highlight && <View style={styles.highlightDot} />}
       <View style={styles.topRow}>
         <View style={[styles.sportBadge, { backgroundColor: `${sportColor}1A` }]}>
           <View style={[styles.sportDot, { backgroundColor: sportColor }]} />
@@ -124,6 +125,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
+    position: 'relative',
+  },
+  highlightDot: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: colors.logoGreen,
+    shadowColor: colors.logoGreen,
+    shadowOpacity: 0.7,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 0 },
+    zIndex: 5,
   },
   topRow: {
     flexDirection: 'row',
