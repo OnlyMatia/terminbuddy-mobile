@@ -1,11 +1,12 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircleIcon } from '../components/Icons';
 import { useNotifications } from '../context/NotificationContext';
 import { SPORT_ICONS } from '../data/data';
 import { getUserChatRooms } from '../lib/api';
+import { supabase } from '../lib/supabase';
 import { colors } from '../theme/colors';
 
 function formatMessageTime(dateStr) {
@@ -41,12 +42,51 @@ export default function ChatsScreen() {
     setRefreshing(false);
   }, []);
 
+  const initialLoadedRef = useRef(false);
+
   useFocusEffect(
     useCallback(() => {
-      load();
+      if (!initialLoadedRef.current) {
+        initialLoadedRef.current = true;
+        load();
+      }
       clearChatUnread();
     }, [load, clearChatUnread]),
   );
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const channel = supabase
+      .channel('chat-rooms-live')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
+        const msg = payload.new;
+        setRooms((prev) => {
+          const idx = prev.findIndex((r) => r.id === msg.termin_id);
+          if (idx === -1) return prev;
+
+          const room = prev[idx];
+          const isMine = msg.sender_id === currentUserId;
+          const updated = {
+            ...room,
+            lastMessage: { ...msg },
+            unreadCount: isMine ? room.unreadCount : (room.unreadCount || 0) + 1,
+          };
+
+          const rest = prev.filter((r, i) => i !== idx);
+          return [updated, ...rest];
+        });
+
+        const inRoom = rooms.find((r) => r.id === msg.termin_id);
+        if (inRoom && !inRoom.lastMessage?.profiles && msg.sender_id !== currentUserId) {
+          const { data: prof } = await supabase.from('profiles').select('username, avatar_url').eq('id', msg.sender_id).single();
+          setRooms((prev) => prev.map((r) => (r.id === msg.termin_id ? { ...r, lastMessage: { ...r.lastMessage, profiles: prof } } : r)));
+        }
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [currentUserId, rooms]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>

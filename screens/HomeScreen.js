@@ -128,9 +128,13 @@ export default function HomeScreen({ userProfile }) {
     else fetchTermins(0);
   };
 
+  const initialLoadedRef = useRef(false);
   useFocusEffect(
     useCallback(() => {
-      refreshRef.current?.();
+      if (!initialLoadedRef.current) {
+        initialLoadedRef.current = true;
+        refreshRef.current?.();
+      }
     }, []),
   );
 
@@ -146,17 +150,32 @@ export default function HomeScreen({ userProfile }) {
   useEffect(() => {
     const channel = supabase
       .channel('active-termins-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'termins' }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'termins' }, async (payload) => {
         if (isSearchActive) return;
         const t = payload.new;
         const matchesSport = selectedSport === 'Svi sportovi' || t.sport?.toLowerCase() === selectedSport.toLowerCase();
         const matchesCity = filters.cities.length === 0 || filters.cities.some((c) => c.toLowerCase() === t.city?.toLowerCase());
         const matchesDate = !dateFilter.from || (t.event_date >= dateFilter.from && t.event_date <= (dateFilter.to || dateFilter.from));
-        if (matchesSport && matchesCity && matchesDate) fetchTermins(0);
+        if (!matchesSport || !matchesCity || !matchesDate) return;
+
+        const { data: prof } = await supabase.from('profiles').select('username, avatar_url').eq('id', t.creator_id).single();
+        setTermini((prev) => {
+          if (prev.some((x) => x.id === t.id)) return prev;
+          return [{ ...t, profiles: prof }, ...prev];
+        });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'termins' }, (payload) => {
+        const t = payload.new;
+        setTermini((prev) => prev.map((x) => (x.id === t.id ? { ...x, ...t } : x)));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'termins' }, (payload) => {
+        const oldId = payload.old?.id;
+        if (!oldId) return;
+        setTermini((prev) => prev.filter((x) => x.id !== oldId));
       })
       .subscribe();
     return () => supabase.removeChannel(channel);
-  }, [fetchTermins, isSearchActive, selectedSport, filters.cities, dateFilter]);
+  }, [isSearchActive, selectedSport, filters.cities, dateFilter]);
 
   const handleClearSearch = () => {
     setSearchQuery('');
