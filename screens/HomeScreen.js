@@ -223,7 +223,7 @@ export default function HomeScreen({ userProfile }) {
         }
         ListHeaderComponent={
           <View>
-            <Text style={styles.title}>Aktivni termini u blizini</Text>
+            <Text style={styles.title}>Aktivni termini</Text>
 
             <View style={styles.toolbar}>
               <View style={styles.searchBox}>

@@ -2,6 +2,7 @@ export const SPORT_ICONS = {
   Futsal: '⚽',
   Nogomet: '⚽',
   Košarka: '🏀',
+  Kosarka: '🏀',
   Odbojka: '🏐',
   Padel: '🏓',
   Tenis: '🎾',

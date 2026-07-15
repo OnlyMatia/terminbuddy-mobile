@@ -18,6 +18,11 @@ function formatTime(dateStr) {
   return new Date(dateStr).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
 }
 
+function sameMinute(a, b) {
+  if (!a || !b) return false;
+  return formatTime(a) === formatTime(b);
+}
+
 function formatDayLabel(dateStr) {
   const d = new Date(dateStr);
   const now = new Date();
@@ -105,7 +110,9 @@ export default function ChatRoomScreen({ terminId }) {
     const isMine = item.sender_id === currentUserId;
     const prev = messages[index - 1];
     const showDay = !prev || formatDayLabel(prev.created_at) !== formatDayLabel(item.created_at);
-    const showSender = !isMine && (!prev || prev.sender_id !== item.sender_id || showDay);
+    const isNewSenderRun = !prev || prev.sender_id !== item.sender_id || showDay;
+    const showSender = !isMine && isNewSenderRun;
+    const showTime = !prev || showDay || !sameMinute(prev.created_at, item.created_at);
 
     return (
       <View>
@@ -114,18 +121,24 @@ export default function ChatRoomScreen({ terminId }) {
             <Text style={styles.dayText}>{formatDayLabel(item.created_at)}</Text>
           </View>
         )}
-        <View style={[styles.msgRow, isMine ? styles.msgRowMine : styles.msgRowTheirs]}>
+        <View style={[styles.msgRow, isMine ? styles.msgRowMine : styles.msgRowTheirs, !isNewSenderRun && { marginTop: -4 }]}>
           {!isMine && (
-            <View style={styles.msgAvatar}>
-              {showSender ? item.profiles?.avatar_url ? <Image source={{ uri: item.profiles.avatar_url }} style={styles.msgAvatarImg} /> : <Text style={styles.msgAvatarText}>{getInitials(item.profiles?.username)}</Text> : null}
+            <View style={styles.avatarColumn}>
+              {showSender ? (
+                <>
+                  <View style={styles.msgAvatar}>{item.profiles?.avatar_url ? <Image source={{ uri: item.profiles.avatar_url }} style={styles.msgAvatarImg} /> : <Text style={styles.msgAvatarText}>{getInitials(item.profiles?.username)}</Text>}</View>
+                  <Text style={styles.senderName} numberOfLines={1}>
+                    {item.profiles?.username || 'Korisnik'}
+                  </Text>
+                </>
+              ) : null}
             </View>
           )}
-          <View style={{ maxWidth: '75%' }}>
-            {showSender && <Text style={styles.senderName}>{item.profiles?.username || 'Korisnik'}</Text>}
+          <View style={[styles.bubbleTimeRow, isMine && { justifyContent: 'flex-end' }]}>
             <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}>
               <Text style={[styles.msgText, isMine && { color: '#000' }]}>{item.content}</Text>
             </View>
-            <Text style={[styles.msgTime, isMine && { textAlign: 'right' }]}>{formatTime(item.created_at)}</Text>
+            {showTime && <Text style={styles.msgTime}>{formatTime(item.created_at)}</Text>}
           </View>
         </View>
       </View>
@@ -263,7 +276,8 @@ const styles = StyleSheet.create({
   },
   msgRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    alignItems: 'flex-end',
+    marginBottom: 12,
     gap: 8,
   },
   msgRowMine: {
@@ -271,6 +285,10 @@ const styles = StyleSheet.create({
   },
   msgRowTheirs: {
     justifyContent: 'flex-start',
+  },
+  avatarColumn: {
+    width: 40,
+    alignItems: 'center',
   },
   msgAvatar: {
     width: 30,
@@ -280,8 +298,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    alignSelf: 'flex-end',
-    marginBottom: 18,
   },
   msgAvatarImg: {
     width: '100%',
@@ -294,15 +310,23 @@ const styles = StyleSheet.create({
   },
   senderName: {
     color: colors.textSec,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    marginBottom: 3,
-    marginLeft: 4,
+    marginTop: 3,
+    maxWidth: 40,
+    textAlign: 'center',
+  },
+  bubbleTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 6,
+    maxWidth: '78%',
   },
   bubble: {
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 18,
+    flexShrink: 1,
   },
   bubbleMine: {
     backgroundColor: colors.logoGreen,
@@ -320,8 +344,6 @@ const styles = StyleSheet.create({
   msgTime: {
     color: colors.textFaint,
     fontSize: 10,
-    marginTop: 3,
-    marginHorizontal: 4,
   },
   inputBar: {
     flexDirection: 'row',
