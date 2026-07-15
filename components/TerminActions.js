@@ -99,8 +99,8 @@ export default function TerminActions({ isOwner, isRegistered, hasPendingRequest
 
 const styles = StyleSheet.create({
   btn: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -131,7 +131,8 @@ const styles = StyleSheet.create({
   },
   disabledBox: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     borderRadius: radius.md,
     backgroundColor: colors.bg3,
     alignItems: 'center',

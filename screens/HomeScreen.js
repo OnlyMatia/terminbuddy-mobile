@@ -44,10 +44,14 @@ export default function HomeScreen({ userProfile }) {
   const [sportCounts, setSportCounts] = useState({});
   const [refreshing, setRefreshing] = useState(false);
 
-  const [filters, setFilters] = useState({
-    country: '',
-    cities: [],
-    sortBy: 'Najnoviji',
+  const [filters, setFilters] = useState(() => {
+    const country = userProfile?.country || userProfile?.settings?.country || '';
+    const city = userProfile?.location || userProfile?.settings?.city || '';
+    return {
+      country,
+      cities: city ? [city] : [],
+      sortBy: 'Najnoviji',
+    };
   });
 
   const userCountry = userProfile?.country || userProfile?.settings?.country || '';

@@ -108,7 +108,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
   })();
   const visiblePlayers = showAllPlayers ? playersWithCreator : playersWithCreator.slice(0, 3);
   const isTeamSport = TEAM_SPORTS.includes(sportKey);
-  const showTeamsSection = hasAccess && registeredProfiles.length > 0 && isTeamSport;
+  const showTeamsSection = isRegistered && registeredProfiles.length > 0 && isTeamSport;
 
   const canRate = (playerId) => {
     if (!isExpired) return false;
@@ -219,7 +219,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
 
         {showTeamsSection && (
           <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-            <TeamsAndResult termin={termin} currentUser={currentUser} isOwner={isOwner} isExpired={isExpired} registeredProfiles={registeredProfiles} />
+            <TeamsAndResult termin={termin} currentUser={currentUser} isOwner={isOwner} isExpired={isExpired} registeredProfiles={registeredProfiles} onRefresh={onRefresh} />
           </View>
         )}
 
@@ -274,6 +274,11 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
                 </View>
                 {isOwner && !isExpired && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    {localManualPlayers !== (termin.active_players || 0) && (
+                      <TouchableOpacity onPress={handleConfirmManualPlayers} disabled={updatingManual} style={[styles.saveManualBtn, updatingManual && { opacity: 0.5 }]}>
+                        <Text style={styles.saveManualBtnText}>{updatingManual ? '...' : 'Spremi'}</Text>
+                      </TouchableOpacity>
+                    )}
                     <TouchableOpacity onPress={() => setLocalManualPlayers((p) => Math.max(0, p - 1))} disabled={localManualPlayers <= 0 || updatingManual} style={[styles.stepBtn, (localManualPlayers <= 0 || updatingManual) && { opacity: 0.3 }]}>
                       <Text style={styles.stepBtnText}>−</Text>
                     </TouchableOpacity>
@@ -284,11 +289,6 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
                     >
                       <Text style={styles.stepBtnText}>+</Text>
                     </TouchableOpacity>
-                    {localManualPlayers !== (termin.active_players || 0) && (
-                      <TouchableOpacity onPress={handleConfirmManualPlayers} disabled={updatingManual} style={[styles.saveManualBtn, updatingManual && { opacity: 0.5 }]}>
-                        <Text style={styles.saveManualBtnText}>{updatingManual ? '...' : 'Spremi'}</Text>
-                      </TouchableOpacity>
-                    )}
                   </View>
                 )}
               </View>
@@ -629,7 +629,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     backgroundColor: colors.logoGreen,
-    marginLeft: 2,
   },
   saveManualBtnText: {
     color: '#000',

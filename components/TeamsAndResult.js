@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { assignPlayerToTeam, submitTerminResult } from '../lib/api';
@@ -44,8 +43,7 @@ function TeamCard({ label, color, players, isOwner, currentUser, hasResult, scor
   );
 }
 
-export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired, registeredProfiles }) {
-  const router = useRouter();
+export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired, registeredProfiles, onRefresh }) {
   const teams = termin.teams || { a: [], b: [] };
   const hasResult = !!termin.result_entered_at;
 
@@ -72,19 +70,33 @@ export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired
 
   const handleAssign = async (userId, team) => {
     if (assigning) return;
+    if (hasResult) {
+      showToast('Rezultat je već unesen.');
+      return;
+    }
+    const isHost = isOwner;
+    const isSelf = userId === currentUser?.id;
+    if (!isHost && !isSelf) {
+      showToast('Možeš pomicati samo sebe.');
+      return;
+    }
     setAssigning(userId);
     const res = await assignPlayerToTeam(termin.id, userId, team);
     if (!res.success) showToast(res.message || 'Greška.');
-    else router.replace(`/termin/${termin.id}`);
+    else onRefresh?.();
     setAssigning(null);
   };
 
   const handleRemove = async (userId) => {
     if (assigning) return;
+    if (hasResult) {
+      showToast('Rezultat je već unesen.');
+      return;
+    }
     setAssigning(userId);
     const res = await assignPlayerToTeam(termin.id, userId, null);
     if (!res.success) showToast(res.message || 'Greška.');
-    else router.replace(`/termin/${termin.id}`);
+    else onRefresh?.();
     setAssigning(null);
   };
 
@@ -99,7 +111,7 @@ export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired
     const res = await submitTerminResult(termin.id, a, b);
     if (res.success) {
       setEditingResult(false);
-      router.replace(`/termin/${termin.id}`);
+      onRefresh?.();
     } else {
       showToast(res.message || 'Greška.');
     }

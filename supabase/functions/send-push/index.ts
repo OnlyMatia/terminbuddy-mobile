@@ -5,7 +5,7 @@ const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-const TITLES = {
+const FALLBACK_TITLES = {
   auto_joined: 'Netko se pridružio terminu',
   request_received: 'Novi zahtjev za termin',
   request_approved: 'Prihvaćen si na termin',
@@ -27,7 +27,15 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ skipped: 'no_push_token' }), { status: 200 });
     }
 
-    const title = TITLES[notification.type] || 'TerminBuddy';
+    let title = FALLBACK_TITLES[notification.type] || 'TerminBuddy';
+
+    if (notification.termin_id) {
+      const { data: termin } = await supabase.from('termins').select('title, playground, sport').eq('id', notification.termin_id).single();
+
+      if (termin?.title) title = termin.title;
+      else if (termin?.playground) title = termin.playground;
+      else if (termin?.sport) title = termin.sport;
+    }
 
     const pushResponse = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',

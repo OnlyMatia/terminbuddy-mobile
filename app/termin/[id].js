@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotifications } from '../../context/NotificationContext';
-import { getTerminChatPreview, getTerminDetails, getUserProfile } from '../../lib/api';
+import { getTerminChatPreview, getTerminDetails, getUserProfile, processTerminExpireStats } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import TerminDetailScreen from '../../screens/TerminDetailScreen';
 import { colors } from '../../theme/colors';
@@ -35,6 +35,13 @@ export default function TerminDetail() {
     const terminData = result.data;
     const user = userRes?.profile || null;
     setCurrentUser(user);
+
+    if (terminData && !terminData.stats_processed && terminData.event_date) {
+      const eventDateTime = new Date(`${terminData.event_date}T${terminData.event_time || '00:00'}`);
+      if (eventDateTime < new Date()) {
+        processTerminExpireStats(terminData.id);
+      }
+    }
 
     const isOwner = user?.id === terminData.creator_id;
     const isRegistered = terminData.registered_players?.includes(user?.id);

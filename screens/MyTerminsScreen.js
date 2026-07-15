@@ -19,13 +19,23 @@ function isTerminPast(dateStr, timeStr) {
   return new Date(y, m - 1, d, 23, 59, 59) < new Date();
 }
 
+function eventTimestamp(dateStr, timeStr) {
+  if (!dateStr) return 0;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (timeStr) {
+    const [h, min] = timeStr.split(':').map(Number);
+    return new Date(y, m - 1, d, h, min).getTime();
+  }
+  return new Date(y, m - 1, d, 0, 0, 0).getTime();
+}
+
 function sortActiveFirst(list) {
   return [...list].sort((a, b) => {
     const pastA = isTerminPast(a.event_date, a.event_time);
     const pastB = isTerminPast(b.event_date, b.event_time);
     if (pastA && !pastB) return 1;
     if (!pastA && pastB) return -1;
-    return 0;
+    return eventTimestamp(a.event_date, a.event_time) - eventTimestamp(b.event_date, b.event_time);
   });
 }
 
