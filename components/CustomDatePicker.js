@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Modal, PanResponder, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { formatDisplayDate } from '../utils/utils';
 import { ArrowLeftIcon, CalendarIcon } from './Icons';
@@ -16,6 +16,28 @@ function formatDateLocal(date) {
 
 export default function CustomDatePicker({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
+  const dragY = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 4 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) dragY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          setIsOpen(false);
+        } else {
+          Animated.spring(dragY, { toValue: 0, useNativeDriver: true, bounciness: 0 }).start();
+        }
+      },
+    }),
+  ).current;
+
+  useEffect(() => {
+    if (isOpen) dragY.setValue(0);
+  }, [isOpen]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -77,14 +99,17 @@ export default function CustomDatePicker({ value, onChange }) {
         <CalendarIcon size={20} color={colors.logoGreen} />
       </TouchableOpacity>
 
-      <Modal visible={isOpen} transparent animationType="fade" onRequestClose={() => setIsOpen(false)}>
+      <Modal visible={isOpen} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={() => setIsOpen(false)}>
         <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
 
-        <View style={styles.sheet}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>Odaberi datum</Text>
+        <Animated.View style={[styles.sheet, { transform: [{ translateY: dragY }] }]}>
+          <View {...panResponder.panHandlers}>
+            <View style={styles.handle} />
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>Odaberi datum</Text>
+            </View>
           </View>
 
           <View style={styles.calendarCard}>
@@ -128,7 +153,7 @@ export default function CustomDatePicker({ value, onChange }) {
               })}
             </View>
           </View>
-        </View>
+        </Animated.View>
       </Modal>
     </>
   );
@@ -163,6 +188,14 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 28,
+  },
+  handle: {
+    width: 48,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.textFaint,
+    alignSelf: 'center',
+    marginTop: 10,
   },
   sheetHeader: {
     paddingHorizontal: 20,

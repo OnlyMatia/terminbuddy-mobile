@@ -2,10 +2,12 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import RadioDot from '../../components/RadioDot';
 import ReviewCell from '../../components/ReviewCell';
 import StepHeading from '../../components/StepHeading';
+import { SPORT_COLORS } from '../../data/data';
 import { colors } from '../../theme/colors';
 import { formatDisplayDate, formatPrice } from '../../utils/utils';
 
 export default function StepReview({ form, set, perPlayer, goTo, error }) {
+  const sportColor = SPORT_COLORS[form.sport?.toLowerCase()] || colors.logoGreen;
   return (
     <>
       <StepHeading title="Skoro gotovo." desc="Odluči kako se igrači mogu pridružiti i pregledaj termin prije objavljivanja." />
@@ -34,9 +36,9 @@ export default function StepReview({ form, set, perPlayer, goTo, error }) {
         <View style={styles.topStripe} />
         <View style={styles.reviewHeader}>
           <View style={styles.badgesRow}>
-            <View style={styles.sportBadge}>
-              <View style={styles.dot} />
-              <Text style={styles.sportBadgeText}>{form.sport || '—'}</Text>
+            <View style={[styles.sportBadge, { backgroundColor: `${sportColor}1A`, borderColor: `${sportColor}4D` }]}>
+              <View style={[styles.dot, { backgroundColor: sportColor }]} />
+              <Text style={[styles.sportBadgeText, { color: sportColor }]}>{form.sport || '—'}</Text>
             </View>
             <View style={styles.grayBadge}>
               <Text style={styles.grayBadgeText}>{form.skill_level}</Text>
@@ -45,7 +47,7 @@ export default function StepReview({ form, set, perPlayer, goTo, error }) {
               <Text style={styles.grayBadgeText}>{form.max_players} igrača</Text>
             </View>
           </View>
-          <Text style={styles.reviewTitle}>{form.playground || 'Naziv termina'}</Text>
+          <Text style={styles.reviewTitle}>{form.title || form.playground || 'Naziv termina'}</Text>
           {!!form.description && <Text style={styles.reviewDesc}>{form.description}</Text>}
         </View>
 
@@ -129,18 +131,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,122,28,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(255,122,28,0.3)',
   },
   dot: {
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: '#ff7a1c',
   },
   sportBadgeText: {
-    color: '#ff7a1c',
     fontSize: 11,
     fontWeight: '500',
     textTransform: 'uppercase',

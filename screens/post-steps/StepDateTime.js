@@ -16,7 +16,7 @@ export default function StepDateTime({ form, set }) {
         </View>
         <View>
           <Text style={styles.label}>Vrijeme</Text>
-          <CustomTimePicker value={form.time} onChange={(v) => set('time', v)} step={30} />
+          <CustomTimePicker value={form.time} onChange={(v) => set('time', v)} step={30} date={form.date} />
         </View>
       </View>
     </>
