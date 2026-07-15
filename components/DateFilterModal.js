@@ -220,6 +220,8 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.45)',
+    height: '100%',
+    width: '100%',
   },
   panel: {
     position: 'absolute',
