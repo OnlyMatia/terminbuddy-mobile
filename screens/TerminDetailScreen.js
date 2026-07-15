@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Image, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackIcon, ChevronRightIcon, ShareIcon } from '../components/Icons';
@@ -9,6 +9,7 @@ import TeamsAndResult from '../components/TeamsAndResult';
 import TerminActions from '../components/TerminActions';
 import { Toast } from '../components/Toast';
 import { SPORT_COLORS, TEAM_SPORTS, days } from '../data/data';
+import { updateTerminActivePlayers } from '../lib/api';
 import { colors } from '../theme/colors';
 import { convertCurrency, formatDate, formatPrice } from '../utils/utils';
 
@@ -40,8 +41,26 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
   const [ratingPlayer, setRatingPlayer] = useState(null);
   const [optimisticRated, setOptimisticRated] = useState(() => new Set());
   const [toast, setToast] = useState(null);
+  const [localManualPlayers, setLocalManualPlayers] = useState(termin.active_players || 0);
+  const [updatingManual, setUpdatingManual] = useState(false);
+
+  useEffect(() => {
+    setLocalManualPlayers(termin.active_players || 0);
+  }, [termin.active_players]);
 
   const showToast = useCallback((message) => setToast({ message, id: Date.now() }), []);
+
+  const handleConfirmManualPlayers = async () => {
+    setUpdatingManual(true);
+    try {
+      const res = await updateTerminActivePlayers(termin.id, localManualPlayers);
+      if (res?.success) onRefresh?.();
+      else showToast('Greška pri spremanju.');
+    } catch {
+      showToast('Greška pri spremanju.');
+    }
+    setUpdatingManual(false);
+  };
 
   const sportKey = termin.sport?.toLowerCase();
   const sportColor = SPORT_COLORS[sportKey] || colors.logoGreen;
@@ -50,7 +69,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
   const hasPendingRequest = termin.currentUserRequestStatus === 'pending';
   const registeredProfiles = termin.registered_profiles || [];
   const appPlayers = termin.registered_players?.length || 0;
-  const totalPlayers = appPlayers + (termin.active_players || 0);
+  const totalPlayers = appPlayers + localManualPlayers;
   const isFull = totalPlayers >= termin.max_players;
   const slotsLeft = Math.max(0, termin.max_players - totalPlayers);
   const pendingRequests = termin.termin_requests?.filter((r) => r.status === 'pending') || [];
@@ -78,9 +97,7 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
   const playersWithCreator = (() => {
     const list = [...registeredProfiles];
     const creator = termin.profiles;
-    if (creator?.id && !list.some((p) => p.id === creator.id)) {
-      list.unshift({ id: creator.id, username: creator.username, avatar_url: creator.avatar_url });
-    } else if (creator?.id) {
+    if (creator?.id) {
       const idx = list.findIndex((p) => p.id === creator.id);
       if (idx > 0) {
         const [c] = list.splice(idx, 1);
@@ -247,12 +264,33 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
               );
             })}
 
-            {(isOwner || (termin.active_players || 0) > 0) && (
+            {(isOwner || localManualPlayers > 0) && (
               <View style={styles.externalRow}>
-                <View style={styles.externalAvatar}>
-                  <Text style={styles.externalAvatarText}>+{termin.active_players || 0}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={styles.externalAvatar}>
+                    <Text style={styles.externalAvatarText}>+{localManualPlayers}</Text>
+                  </View>
+                  <Text style={styles.externalLabel}>Vanjski igrači</Text>
                 </View>
-                <Text style={styles.externalLabel}>Vanjski igrači</Text>
+                {isOwner && !isExpired && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TouchableOpacity onPress={() => setLocalManualPlayers((p) => Math.max(0, p - 1))} disabled={localManualPlayers <= 0 || updatingManual} style={[styles.stepBtn, (localManualPlayers <= 0 || updatingManual) && { opacity: 0.3 }]}>
+                      <Text style={styles.stepBtnText}>−</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setLocalManualPlayers((p) => p + 1)}
+                      disabled={localManualPlayers + appPlayers >= termin.max_players || updatingManual}
+                      style={[styles.stepBtn, (localManualPlayers + appPlayers >= termin.max_players || updatingManual) && { opacity: 0.3 }]}
+                    >
+                      <Text style={styles.stepBtnText}>+</Text>
+                    </TouchableOpacity>
+                    {localManualPlayers !== (termin.active_players || 0) && (
+                      <TouchableOpacity onPress={handleConfirmManualPlayers} disabled={updatingManual} style={[styles.saveManualBtn, updatingManual && { opacity: 0.5 }]}>
+                        <Text style={styles.saveManualBtnText}>{updatingManual ? '...' : 'Spremi'}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -566,11 +604,37 @@ const styles = StyleSheet.create({
   externalRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 12,
     backgroundColor: colors.bg2,
+  },
+  stepBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: colors.bg3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepBtnText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveManualBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: colors.logoGreen,
+    marginLeft: 2,
+  },
+  saveManualBtnText: {
+    color: '#000',
+    fontSize: 11,
+    fontWeight: '700',
   },
   externalAvatar: {
     width: 38,

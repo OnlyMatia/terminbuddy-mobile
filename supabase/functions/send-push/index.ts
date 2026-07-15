@@ -6,8 +6,9 @@ const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 const TITLES = {
-  join: 'Netko se pridružio terminu',
-  request: 'Novi zahtjev za termin',
+  auto_joined: 'Netko se pridružio terminu',
+  request_received: 'Novi zahtjev za termin',
+  request_approved: 'Prihvaćen si na termin',
   leave: 'Netko je napustio termin',
 };
 

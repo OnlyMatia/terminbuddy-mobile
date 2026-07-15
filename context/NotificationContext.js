@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { getUnreadNotificationsCount, getUnreadNotificationTerminIds, getUserChatRooms, markNotificationsRead } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
@@ -10,20 +10,22 @@ export function NotificationProvider({ children }) {
   const [hasTerminNotifs, setHasTerminNotifs] = useState(false);
   const [hasChatUnread, setHasChatUnread] = useState(false);
   const [unreadTerminIds, setUnreadTerminIds] = useState(() => new Set());
-  const myRoomIdsRef = useRef(new Set());
+  const [roomIds, setRoomIds] = useState([]);
+  const [lastMessageEvent, setLastMessageEvent] = useState(null);
 
   const refresh = useCallback(async () => {
     if (!user) {
       setHasTerminNotifs(false);
       setHasChatUnread(false);
       setUnreadTerminIds(new Set());
+      setRoomIds([]);
       return;
     }
     const [notifCount, terminIds, roomsRes] = await Promise.all([getUnreadNotificationsCount(), getUnreadNotificationTerminIds(), getUserChatRooms()]);
     setHasTerminNotifs(notifCount > 0);
     setUnreadTerminIds(new Set(terminIds));
     if (roomsRes.success) {
-      myRoomIdsRef.current = new Set(roomsRes.data.map((r) => r.id));
+      setRoomIds(roomsRes.data.map((r) => r.id));
       const totalUnread = roomsRes.data.reduce((sum, r) => sum + (r.unreadCount || 0), 0);
       setHasChatUnread(totalUnread > 0);
     }
@@ -37,23 +39,41 @@ export function NotificationProvider({ children }) {
     if (!user) return;
 
     const channel = supabase
-      .channel('global-notifications')
+      .channel(`notifications-${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
         setHasTerminNotifs(true);
         const terminId = payload.new?.termin_id;
-        if (terminId) {
-          setUnreadTerminIds((prev) => new Set(prev).add(terminId));
-        }
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-        const msg = payload.new;
-        if (msg.sender_id === user.id) return;
-        if (myRoomIdsRef.current.has(msg.termin_id)) setHasChatUnread(true);
+        if (terminId) setUnreadTerminIds((prev) => new Set(prev).add(terminId));
       })
       .subscribe();
 
     return () => supabase.removeChannel(channel);
   }, [user]);
+
+  useEffect(() => {
+    if (!user || roomIds.length === 0) return;
+
+    const channel = supabase
+      .channel(`messages-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `termin_id=in.(${roomIds.join(',')})`,
+        },
+        (payload) => {
+          const msg = payload.new;
+          if (msg.sender_id === user.id) return;
+          setHasChatUnread(true);
+          setLastMessageEvent(msg);
+        },
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [user, roomIds.join(',')]);
 
   const clearTerminNotifs = useCallback(async () => {
     setHasTerminNotifs(false);
@@ -73,13 +93,22 @@ export function NotificationProvider({ children }) {
     setHasChatUnread(false);
   }, []);
 
+  const registerRooms = useCallback((ids) => {
+    setRoomIds((prev) => {
+      const next = ids.join(',');
+      return prev.join(',') === next ? prev : ids;
+    });
+  }, []);
+
   return (
     <NotificationContext.Provider
       value={{
         hasTerminNotifs,
         hasChatUnread,
         unreadTerminIds,
+        lastMessageEvent,
         refresh,
+        registerRooms,
         clearTerminNotifs,
         clearTerminNotifForId,
         clearChatUnread,

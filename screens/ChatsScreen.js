@@ -25,68 +25,71 @@ function formatMessageTime(dateStr) {
 
 export default function ChatsScreen() {
   const router = useRouter();
-  const { clearChatUnread } = useNotifications();
+  const { clearChatUnread, lastMessageEvent, registerRooms } = useNotifications();
   const [rooms, setRooms] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    const result = await getUserChatRooms();
-    if (result.success) {
-      setRooms(result.data);
-      setCurrentUserId(result.userId);
-    }
-    setLoading(false);
-    setRefreshing(false);
-  }, []);
+  const load = useCallback(
+    async ({ silent = false, pull = false } = {}) => {
+      if (pull) setRefreshing(true);
+      const result = await getUserChatRooms();
+      if (result.success) {
+        setRooms(result.data);
+        setCurrentUserId(result.userId);
+        registerRooms(result.data.map((r) => r.id));
+      }
+      setLoading(false);
+      setRefreshing(false);
+    },
+    [registerRooms],
+  );
 
   const initialLoadedRef = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
-      if (!initialLoadedRef.current) {
-        initialLoadedRef.current = true;
-        load();
-      }
+      load({ silent: initialLoadedRef.current });
+      initialLoadedRef.current = true;
       clearChatUnread();
     }, [load, clearChatUnread]),
   );
 
+  const handledMsgRef = useRef(null);
+
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!lastMessageEvent || !currentUserId) return;
+    if (handledMsgRef.current === lastMessageEvent.id) return;
+    handledMsgRef.current = lastMessageEvent.id;
 
-    const channel = supabase
-      .channel('chat-rooms-live')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
-        const msg = payload.new;
-        setRooms((prev) => {
-          const idx = prev.findIndex((r) => r.id === msg.termin_id);
-          if (idx === -1) return prev;
+    const msg = lastMessageEvent;
 
-          const room = prev[idx];
-          const isMine = msg.sender_id === currentUserId;
-          const updated = {
-            ...room,
-            lastMessage: { ...msg },
-            unreadCount: isMine ? room.unreadCount : (room.unreadCount || 0) + 1,
-          };
+    setRooms((prev) => {
+      const idx = prev.findIndex((r) => r.id === msg.termin_id);
+      if (idx === -1) return prev;
 
-          const rest = prev.filter((r, i) => i !== idx);
-          return [updated, ...rest];
-        });
+      const room = prev[idx];
+      const updated = {
+        ...room,
+        lastMessage: { ...msg, profiles: room.lastMessage?.profiles },
+        unreadCount: (room.unreadCount || 0) + 1,
+      };
 
-        const inRoom = rooms.find((r) => r.id === msg.termin_id);
-        if (inRoom && !inRoom.lastMessage?.profiles && msg.sender_id !== currentUserId) {
-          const { data: prof } = await supabase.from('profiles').select('username, avatar_url').eq('id', msg.sender_id).single();
-          setRooms((prev) => prev.map((r) => (r.id === msg.termin_id ? { ...r, lastMessage: { ...r.lastMessage, profiles: prof } } : r)));
-        }
-      })
-      .subscribe();
+      const rest = prev.filter((_, i) => i !== idx);
+      return [updated, ...rest];
+    });
 
-    return () => supabase.removeChannel(channel);
-  }, [currentUserId, rooms]);
+    supabase
+      .from('profiles')
+      .select('username, avatar_url')
+      .eq('id', msg.sender_id)
+      .single()
+      .then(({ data: prof }) => {
+        if (!prof) return;
+        setRooms((prev) => prev.map((r) => (r.id === msg.termin_id && r.lastMessage?.id === msg.id ? { ...r, lastMessage: { ...r.lastMessage, profiles: prof } } : r)));
+      });
+  }, [lastMessageEvent, currentUserId]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -95,7 +98,7 @@ export default function ChatsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={colors.logoGreen} colors={[colors.logoGreen]} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load({ pull: true })} tintColor={colors.logoGreen} colors={[colors.logoGreen]} />}
         ListHeaderComponent={<Text style={styles.title}>Poruke</Text>}
         renderItem={({ item }) => {
           const lastMsg = item.lastMessage;

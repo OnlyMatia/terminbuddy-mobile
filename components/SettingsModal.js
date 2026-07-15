@@ -98,7 +98,7 @@ export default function SettingsModal({ visible, onClose, user, onEditProfile, o
   const isDark = theme === 'dark';
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />

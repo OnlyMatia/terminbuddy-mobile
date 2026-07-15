@@ -1,11 +1,13 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Dimensions, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlusIcon } from '../components/Icons';
 import TerminCard from '../components/TerminCard';
 import { useNotifications } from '../context/NotificationContext';
 import { colors, radius } from '../theme/colors';
+
+const { width: SCREEN_W } = Dimensions.get('window');
 
 function isTerminPast(dateStr, timeStr) {
   if (!dateStr) return false;
@@ -27,20 +29,41 @@ function sortActiveFirst(list) {
   });
 }
 
+const TABS = [
+  { key: 'created', label: 'Organiziram' },
+  { key: 'joined', label: 'Igram' },
+];
+
 export default function MyTerminsScreen({ createdData, joinedData, viewerCurrency = 'EUR', loading, onRefresh, refreshing }) {
   const router = useRouter();
   const { unreadTerminIds } = useNotifications();
-  const [activeTab, setActiveTab] = useState('created');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const pagerRef = useRef(null);
+  const indicatorAnim = useRef(new Animated.Value(0)).current;
 
   const created = useMemo(() => sortActiveFirst(createdData || []), [createdData]);
   const joined = useMemo(() => sortActiveFirst(joinedData || []), [joinedData]);
 
-  const activeList = activeTab === 'created' ? created : joined;
+  useEffect(() => {
+    Animated.spring(indicatorAnim, {
+      toValue: activeIndex,
+      useNativeDriver: true,
+      bounciness: 4,
+      speed: 14,
+    }).start();
+  }, [activeIndex, indicatorAnim]);
 
-  const activeCreatedCount = created.filter((t) => !isTerminPast(t.event_date, t.event_time)).length;
-  const activeJoinedCount = joined.filter((t) => !isTerminPast(t.event_date, t.event_time)).length;
+  const goToTab = (idx) => {
+    setActiveIndex(idx);
+    pagerRef.current?.scrollToOffset({ offset: idx * SCREEN_W, animated: true });
+  };
 
-  const renderEmpty = useCallback(() => {
+  const onMomentumScrollEnd = (e) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
+    if (idx !== activeIndex) setActiveIndex(idx);
+  };
+
+  const renderEmpty = (tabKey) => {
     if (loading) {
       return (
         <View style={styles.emptyState}>
@@ -50,46 +73,68 @@ export default function MyTerminsScreen({ createdData, joinedData, viewerCurrenc
     }
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyTitle}>{activeTab === 'created' ? 'Još nisi objavio nijedan termin.' : 'Još se nisi pridružio nijednom terminu.'}</Text>
-        <Text style={styles.emptyDesc}>{activeTab === 'created' ? 'Objavi svoj prvi termin i skupi ekipu.' : 'Pronađi termin na početnoj i prijavi se.'}</Text>
-        <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push(activeTab === 'created' ? '/(tabs)/post' : '/(tabs)')} activeOpacity={0.9}>
-          {activeTab === 'created' && <PlusIcon size={16} color="#000" />}
-          <Text style={styles.emptyBtnText}>{activeTab === 'created' ? 'Objavi termin' : 'Istraži termine'}</Text>
+        <Text style={styles.emptyTitle}>{tabKey === 'created' ? 'Još nisi objavio nijedan termin.' : 'Još se nisi pridružio nijednom terminu.'}</Text>
+        <Text style={styles.emptyDesc}>{tabKey === 'created' ? 'Objavi svoj prvi termin i skupi ekipu.' : 'Pronađi termin na početnoj i prijavi se.'}</Text>
+        <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push(tabKey === 'created' ? '/(tabs)/post' : '/(tabs)')} activeOpacity={0.9}>
+          {tabKey === 'created' && <PlusIcon size={16} color="#000" />}
+          <Text style={styles.emptyBtnText}>{tabKey === 'created' ? 'Objavi termin' : 'Istraži termine'}</Text>
         </TouchableOpacity>
       </View>
     );
-  }, [loading, activeTab, router]);
+  };
+
+  const renderList = ({ item: tab }) => {
+    const list = tab.key === 'created' ? created : joined;
+    return (
+      <View style={{ width: SCREEN_W }}>
+        <FlatList
+          data={loading ? [] : list}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 40, flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.logoGreen} colors={[colors.logoGreen]} />}
+          renderItem={({ item }) => <TerminCard termin={item} viewerCurrency={viewerCurrency} past={isTerminPast(item.event_date, item.event_time)} highlight={unreadTerminIds.has(item.id)} />}
+          ListEmptyComponent={renderEmpty(tab.key)}
+        />
+      </View>
+    );
+  };
+
+  const indicatorTranslate = indicatorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, SCREEN_W / 2],
+  });
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <FlatList
-        data={loading ? [] : activeList}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40, flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.logoGreen} colors={[colors.logoGreen]} />}
-        ListHeaderComponent={
-          <View>
-            <Text style={styles.title}>Moji termini</Text>
+      <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+        <Text style={styles.title}>Moji termini</Text>
+      </View>
 
-            <View style={styles.segmentRow}>
-              <TouchableOpacity onPress={() => setActiveTab('created')} style={[styles.segment, activeTab === 'created' && styles.segmentActive]} activeOpacity={1}>
-                <Text style={[styles.segmentText, activeTab === 'created' && styles.segmentTextActive]}>Organiziram</Text>
-                <View style={[styles.countBadge, activeTab === 'created' && styles.countBadgeActive]}>
-                  <Text style={[styles.countText, activeTab === 'created' && { color: '#000' }]}>{activeCreatedCount}</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setActiveTab('joined')} style={[styles.segment, activeTab === 'joined' && styles.segmentActive]} activeOpacity={1}>
-                <Text style={[styles.segmentText, activeTab === 'joined' && styles.segmentTextActive]}>Igram</Text>
-                <View style={[styles.countBadge, activeTab === 'joined' && styles.countBadgeActive]}>
-                  <Text style={[styles.countText, activeTab === 'joined' && { color: '#000' }]}>{activeJoinedCount}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-        }
-        renderItem={({ item }) => <TerminCard termin={item} viewerCurrency={viewerCurrency} past={isTerminPast(item.event_date, item.event_time)} highlight={unreadTerminIds.has(item.id)} />}
-        ListEmptyComponent={renderEmpty}
+      <View style={styles.tabsWrap}>
+        <View style={styles.tabsRow}>
+          {TABS.map((tab, idx) => (
+            <TouchableOpacity key={tab.key} onPress={() => goToTab(idx)} style={styles.tabBtn} activeOpacity={0.7}>
+              <Text style={[styles.tabLabel, activeIndex === idx && styles.tabLabelActive]}>{tab.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View style={styles.indicatorTrack}>
+          <Animated.View style={[styles.indicator, { transform: [{ translateX: indicatorTranslate }] }]} />
+        </View>
+      </View>
+
+      <FlatList
+        ref={pagerRef}
+        data={TABS}
+        keyExtractor={(item) => item.key}
+        renderItem={renderList}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        getItemLayout={(_, index) => ({ length: SCREEN_W, offset: SCREEN_W * index, index })}
+        initialScrollIndex={0}
       />
     </SafeAreaView>
   );
@@ -105,57 +150,41 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '600',
     letterSpacing: -0.6,
-    marginTop: 8,
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  segmentRow: {
+  tabsWrap: {
+    marginBottom: 8,
+  },
+  tabsRow: {
     flexDirection: 'row',
-    backgroundColor: colors.bg2,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 5,
-    gap: 4,
-    marginBottom: 16,
   },
-  segment: {
+  tabBtn: {
     flex: 1,
-    flexDirection: 'row',
+    paddingVertical: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 11,
-    borderRadius: 12,
   },
-  segmentActive: {
-    backgroundColor: colors.bg3,
-    borderWidth: 1,
-    borderColor: colors.line2,
-  },
-  segmentText: {
+  tabLabel: {
     color: colors.textSec,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
+    letterSpacing: -0.2,
   },
-  segmentTextActive: {
+  tabLabelActive: {
     color: colors.text,
-    fontWeight: '600',
-  },
-  countBadge: {
-    minWidth: 22,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    alignItems: 'center',
-  },
-  countBadgeActive: {
-    backgroundColor: colors.logoGreen,
-  },
-  countText: {
-    color: colors.textSec,
-    fontSize: 11,
     fontWeight: '700',
+  },
+  indicatorTrack: {
+    height: 2,
+    backgroundColor: colors.line,
+    position: 'relative',
+  },
+  indicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: SCREEN_W / 2,
+    height: 2,
+    backgroundColor: colors.logoGreen,
   },
   emptyState: {
     flex: 1,

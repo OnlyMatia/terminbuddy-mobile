@@ -137,7 +137,7 @@ export function DateFilterModal({ visible, onClose, value, onApply }) {
   const selectionLabel = start ? (end && end !== start ? `${shortLabel(start)} – ${shortLabel(end)}` : shortLabel(start)) : 'Nije odabrano';
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />

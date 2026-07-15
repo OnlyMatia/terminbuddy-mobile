@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { CalendarIcon, HomeIcon, MessageCircleIcon, PlusIcon, UserIcon } from '../../components/Icons';
 import { useNotifications } from '../../context/NotificationContext';
+import { triggerHomeScrollToTop } from '../../lib/homeScrollRegistry';
 import { colors } from '../../theme/colors';
 
 export default function TabsLayout() {
@@ -25,6 +26,13 @@ export default function TabsLayout() {
           title: 'Početna',
           tabBarIcon: ({ color }) => <HomeIcon size={22} color={color} />,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            if (navigation.isFocused()) {
+              triggerHomeScrollToTop();
+            }
+          },
+        })}
       />
       <Tabs.Screen
         name="post"

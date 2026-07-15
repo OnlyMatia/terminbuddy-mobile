@@ -69,7 +69,7 @@ export function FilterModal({ visible, onClose, filters, onApply, userCountry })
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />

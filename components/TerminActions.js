@@ -61,7 +61,6 @@ export default function TerminActions({ isOwner, isRegistered, hasPendingRequest
       </View>
     );
   }
-
   if (isRegistered) {
     return (
       <TouchableOpacity disabled={loading} onPress={() => handleAction(leaveJoinedTermin)} style={[styles.btn, styles.btnMuted]}>
@@ -100,8 +99,8 @@ export default function TerminActions({ isOwner, isRegistered, hasPendingRequest
 
 const styles = StyleSheet.create({
   btn: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -112,7 +111,7 @@ const styles = StyleSheet.create({
   btnPrimaryText: {
     color: '#000',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 11,
   },
   btnMuted: {
     backgroundColor: colors.bg2,
@@ -120,7 +119,7 @@ const styles = StyleSheet.create({
   btnMutedText: {
     color: '#f87171',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 11,
   },
   btnDanger: {
     backgroundColor: 'rgba(239,68,68,0.1)',
@@ -128,11 +127,11 @@ const styles = StyleSheet.create({
   btnDangerText: {
     color: '#f87171',
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 11,
   },
   disabledBox: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: radius.md,
     backgroundColor: colors.bg3,
     alignItems: 'center',
@@ -140,7 +139,7 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     color: colors.textSec,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
   },
 });

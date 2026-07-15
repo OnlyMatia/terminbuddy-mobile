@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DateFilterModal } from '../components/DateFilterModal';
 import { FilterModal } from '../components/FilterModal';
@@ -9,11 +9,11 @@ import { SportChips } from '../components/SportChips';
 import TerminCard from '../components/TerminCard';
 import { SPORT_ICONS } from '../data/data';
 import { getTerminsPaginated, searchTermins } from '../lib/api';
-import { supabase } from '../lib/supabase';
+import { registerHomeScrollToTop } from '../lib/homeScrollRegistry';
 import { colors } from '../theme/colors';
 
 const SPORT_ICON_MAP = { 'Svi sportovi': '🔥', ...SPORT_ICONS };
-const PAGE_SIZE = 40;
+const PAGE_SIZE = 30;
 
 function isTerminPast(dateStr, timeStr) {
   if (!dateStr || !timeStr) return false;
@@ -42,6 +42,7 @@ export default function HomeScreen({ userProfile }) {
   const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState({ from: null, to: null });
   const [sportCounts, setSportCounts] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
   const [filters, setFilters] = useState({
     country: '',
@@ -51,11 +52,19 @@ export default function HomeScreen({ userProfile }) {
 
   const userCountry = userProfile?.country || userProfile?.settings?.country || '';
   const isFirstRender = useRef(true);
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    registerHomeScrollToTop(() => {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    });
+    return () => registerHomeScrollToTop(null);
+  }, []);
 
   const fetchTermins = useCallback(
-    async (offset = 0, append = false) => {
+    async (offset = 0, append = false, silent = false) => {
       if (append) setLoadingMore(true);
-      else setLoading(true);
+      else if (!silent) setLoading(true);
 
       const result = await getTerminsPaginated({
         sport: selectedSport,
@@ -78,31 +87,36 @@ export default function HomeScreen({ userProfile }) {
       }
       setLoading(false);
       setLoadingMore(false);
+      setRefreshing(false);
     },
     [selectedSport, filters, dateFilter],
   );
 
-  const handleSearch = useCallback(async () => {
-    const q = searchQuery.trim();
-    if (!q) {
-      setIsSearchActive(false);
-      fetchTermins(0);
-      return;
-    }
-    setLoading(true);
-    setIsSearchActive(true);
-    const result = await searchTermins(q, PAGE_SIZE, 0, {
-      cities: filters.cities,
-      sport: selectedSport,
-      dateFrom: dateFilter.from,
-      dateTo: dateFilter.to || dateFilter.from,
-    });
-    if (result.success) {
-      setTermini(result.data);
-      setHasMore(result.hasMore);
-    }
-    setLoading(false);
-  }, [searchQuery, fetchTermins, filters.cities, selectedSport, dateFilter]);
+  const handleSearch = useCallback(
+    async (silent = false) => {
+      const q = searchQuery.trim();
+      if (!q) {
+        setIsSearchActive(false);
+        fetchTermins(0, false, silent);
+        return;
+      }
+      if (!silent) setLoading(true);
+      setIsSearchActive(true);
+      const result = await searchTermins(q, PAGE_SIZE, 0, {
+        cities: filters.cities,
+        sport: selectedSport,
+        dateFrom: dateFilter.from,
+        dateTo: dateFilter.to || dateFilter.from,
+      });
+      if (result.success) {
+        setTermini(result.data);
+        setHasMore(result.hasMore);
+      }
+      setLoading(false);
+      setRefreshing(false);
+    },
+    [searchQuery, fetchTermins, filters.cities, selectedSport, dateFilter],
+  );
 
   const loadMoreSearch = useCallback(async () => {
     if (loadingMore || !hasMore) return;
@@ -123,9 +137,9 @@ export default function HomeScreen({ userProfile }) {
   }, [loadingMore, hasMore, searchQuery, termini.length, filters.cities, selectedSport, dateFilter]);
 
   const refreshRef = useRef(null);
-  refreshRef.current = () => {
-    if (isSearchActive) handleSearch();
-    else fetchTermins(0);
+  refreshRef.current = (silent = false) => {
+    if (isSearchActive) handleSearch(silent);
+    else fetchTermins(0, false, silent);
   };
 
   const initialLoadedRef = useRef(false);
@@ -133,7 +147,9 @@ export default function HomeScreen({ userProfile }) {
     useCallback(() => {
       if (!initialLoadedRef.current) {
         initialLoadedRef.current = true;
-        refreshRef.current?.();
+        refreshRef.current?.(false);
+      } else {
+        refreshRef.current?.(true);
       }
     }, []),
   );
@@ -146,36 +162,6 @@ export default function HomeScreen({ userProfile }) {
     if (isSearchActive) handleSearch();
     else fetchTermins(0);
   }, [selectedSport, filters, dateFilter]);
-
-  useEffect(() => {
-    const channel = supabase
-      .channel('active-termins-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'termins' }, async (payload) => {
-        if (isSearchActive) return;
-        const t = payload.new;
-        const matchesSport = selectedSport === 'Svi sportovi' || t.sport?.toLowerCase() === selectedSport.toLowerCase();
-        const matchesCity = filters.cities.length === 0 || filters.cities.some((c) => c.toLowerCase() === t.city?.toLowerCase());
-        const matchesDate = !dateFilter.from || (t.event_date >= dateFilter.from && t.event_date <= (dateFilter.to || dateFilter.from));
-        if (!matchesSport || !matchesCity || !matchesDate) return;
-
-        const { data: prof } = await supabase.from('profiles').select('username, avatar_url').eq('id', t.creator_id).single();
-        setTermini((prev) => {
-          if (prev.some((x) => x.id === t.id)) return prev;
-          return [{ ...t, profiles: prof }, ...prev];
-        });
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'termins' }, (payload) => {
-        const t = payload.new;
-        setTermini((prev) => prev.map((x) => (x.id === t.id ? { ...x, ...t } : x)));
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'termins' }, (payload) => {
-        const oldId = payload.old?.id;
-        if (!oldId) return;
-        setTermini((prev) => prev.filter((x) => x.id !== oldId));
-      })
-      .subscribe();
-    return () => supabase.removeChannel(channel);
-  }, [isSearchActive, selectedSport, filters.cities, dateFilter]);
 
   const handleClearSearch = () => {
     setSearchQuery('');
@@ -211,6 +197,7 @@ export default function HomeScreen({ userProfile }) {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <FlatList
+        ref={listRef}
         data={displayTermini}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 }}
@@ -219,6 +206,17 @@ export default function HomeScreen({ userProfile }) {
         keyboardDismissMode="on-drag"
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.4}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              refreshRef.current?.(true);
+            }}
+            tintColor={colors.logoGreen}
+            colors={[colors.logoGreen]}
+          />
+        }
         ListHeaderComponent={
           <View>
             <Text style={styles.title}>Aktivni termini u blizini</Text>
