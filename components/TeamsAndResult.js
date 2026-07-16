@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   removeX: {
     color: colors.textFaint,
-    fontSize: 16,
+    fontSize: 21,
   },
   unassignedLabel: {
     color: colors.textSec,
