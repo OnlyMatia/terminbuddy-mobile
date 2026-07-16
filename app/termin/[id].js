@@ -64,8 +64,9 @@ export default function TerminDetail() {
   }, [id, clearTerminNotifForId]);
 
   useEffect(() => {
+    const channelName = `termin-live-${id}-${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel(`termin-live-${id}`)
+      .channel(channelName)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'termins', filter: `id=eq.${id}` }, async (payload) => {
         const updated = payload.new;
         const prev = terminRef.current;

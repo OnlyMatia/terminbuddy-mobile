@@ -62,8 +62,9 @@ export default function ChatRoomScreen({ terminId }) {
       markChatRead(terminId);
     })();
 
+    const channelName = `chat-${terminId}-${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel(`chat-${terminId}`)
+      .channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `termin_id=eq.${terminId}` }, async (payload) => {
         const newMsg = payload.new;
         const { data: prof } = await supabase.from('profiles').select('username, avatar_url').eq('id', newMsg.sender_id).single();
