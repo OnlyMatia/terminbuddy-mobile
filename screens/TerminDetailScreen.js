@@ -340,9 +340,9 @@ export default function TerminDetailScreen({ termin, currentUser, chatPreview = 
         <View style={styles.bottomBar}>
           <View style={{ marginRight: 12 }}>
             <Text style={styles.bottomPrice}>{price > 0 ? formatPrice(convertedPerPlayer, viewerCurrency) : 'Besplatno'}</Text>
-            <Text style={styles.bottomSlots}>{slotsLeft > 0 ? `${slotsLeft} mjesta` : 'Popunjeno'}</Text>
+            {price > 0 && <Text style={styles.bottomSlots}>po igraču</Text>}
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flexShrink: 1 }}>
             <TerminActions isOwner={isOwner} isRegistered={isRegistered} hasPendingRequest={hasPendingRequest} terminId={termin.id} isAutoApprove={termin.is_auto_approve} isFull={isFull} isExpired={isExpired} />
           </View>
         </View>
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     color: colors.textFaint,
-    fontSize: 10,
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 3,
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
   },
   sectionTitleSmall: {
     color: colors.textSec,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
   },
   hostBadgeText: {
     color: colors.logoGreen,
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
   },
   chatAvatarText: {
     color: '#000',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   chatSender: {
@@ -709,7 +709,8 @@ const styles = StyleSheet.create({
   bottomBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
     paddingTop: 12,
     paddingBottom: 24,
     borderTopWidth: 1,
@@ -718,12 +719,12 @@ const styles = StyleSheet.create({
   },
   bottomPrice: {
     color: colors.text,
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
   },
   bottomSlots: {
     color: colors.textSec,
-    fontSize: 10,
+    fontSize: 12,
   },
   toastWrap: {
     position: 'absolute',

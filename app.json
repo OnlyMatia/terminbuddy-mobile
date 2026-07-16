@@ -14,7 +14,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icon.png",
+          "image": "./assets/splash-icon.png",
           "backgroundColor": "#0a0c09",
           "resizeMode": "contain",
           "imageWidth": 180
@@ -23,7 +23,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
+          "icon": "./assets/notification-icon.png",
           "color": "#08ff25"
         }
       ]
@@ -35,6 +35,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a0c09"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ab36ce8a-9267-48fc-bd41-6fc7ba72696a"
       }
     }
   }

@@ -16,7 +16,7 @@ export default function MatchRow({ match, isLast }) {
             <Text
               style={{
                 color: isWin ? colors.logoGreen : '#f87171',
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: '700',
                 textTransform: 'uppercase',
               }}

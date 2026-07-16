@@ -683,7 +683,7 @@ const styles = StyleSheet.create({
   },
   savingText: {
     color: colors.logoGreen,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
   },

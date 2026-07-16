@@ -47,11 +47,11 @@ export default function TerminActions({ isOwner, isRegistered, hasPendingRequest
     return (
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {isRegistered ? (
-          <TouchableOpacity disabled={loading} onPress={() => handleAction(leaveJoinedTermin)} style={[styles.btn, styles.btnMuted, { flex: 1 }]}>
+          <TouchableOpacity disabled={loading} onPress={() => handleAction(leaveJoinedTermin)} style={[styles.btn, styles.btnMuted]}>
             <Text style={styles.btnMutedText}>{loading ? 'Odjavljivanje...' : 'Odustani'}</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity disabled={loading || isFull} onPress={() => handleAction(sendRequestToJoin, true)} style={[styles.btn, styles.btnPrimary, { flex: 1 }, (loading || isFull) && { opacity: 0.5 }]}>
+          <TouchableOpacity disabled={loading || isFull} onPress={() => handleAction(sendRequestToJoin, true)} style={[styles.btn, styles.btnPrimary, (loading || isFull) && { opacity: 0.5 }]}>
             {loading ? <ActivityIndicator size="small" color="#000" /> : <Text style={styles.btnPrimaryText}>{isFull ? 'Popunjeno' : 'Prijavi se'}</Text>}
           </TouchableOpacity>
         )}
@@ -72,7 +72,7 @@ export default function TerminActions({ isOwner, isRegistered, hasPendingRequest
   if (hasPendingRequest) {
     return (
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        <View style={[styles.disabledBox, { flex: 1 }]}>
+        <View style={styles.disabledBox}>
           <Text style={styles.disabledText}>Zahtjev poslan</Text>
         </View>
         <TouchableOpacity disabled={loading} onPress={() => handleAction(cancelRequestToJoin)} style={[styles.btn, styles.btnDanger]}>
@@ -99,8 +99,9 @@ export default function TerminActions({ isOwner, isRegistered, hasPendingRequest
 
 const styles = StyleSheet.create({
   btn: {
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    alignSelf: 'flex-start',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
   btnPrimaryText: {
     color: '#000',
     fontWeight: '600',
-    fontSize: 11,
+    fontSize: 14,
   },
   btnMuted: {
     backgroundColor: colors.bg2,
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   btnMutedText: {
     color: '#f87171',
     fontWeight: '600',
-    fontSize: 11,
+    fontSize: 14,
   },
   btnDanger: {
     backgroundColor: 'rgba(239,68,68,0.1)',
@@ -127,12 +128,12 @@ const styles = StyleSheet.create({
   btnDangerText: {
     color: '#f87171',
     fontWeight: '600',
-    fontSize: 11,
+    fontSize: 14,
   },
   disabledBox: {
-    flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    alignSelf: 'flex-start',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
     borderRadius: radius.md,
     backgroundColor: colors.bg3,
     alignItems: 'center',
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     color: colors.textSec,
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '500',
   },
 });

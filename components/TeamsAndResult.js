@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: colors.textSec,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
   doneBadgeText: {
     color: colors.logoGreen,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   miniAvatarText: {
     color: '#000',
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '700',
   },
   playerName: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   unassignedLabel: {
     color: colors.textSec,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,

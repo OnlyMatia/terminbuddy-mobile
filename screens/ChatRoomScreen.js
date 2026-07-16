@@ -305,12 +305,12 @@ const styles = StyleSheet.create({
   },
   msgAvatarText: {
     color: '#000',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   senderName: {
     color: colors.textSec,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     marginTop: 3,
     maxWidth: 40,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   },
   msgTime: {
     color: colors.textFaint,
-    fontSize: 10,
+    fontSize: 11,
   },
   inputBar: {
     flexDirection: 'row',

@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: colors.textSec,
-    fontSize: 10,
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 1,
     textAlign: 'center',

@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   sportCount: {
     color: colors.textSec,
-    fontSize: 10,
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginTop: 4,

@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     color: colors.textFaint,
-    fontSize: 10,
+    fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 2,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   avatarInitials: {
     color: '#000',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   creatorName: {
