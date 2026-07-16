@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, Touchabl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircleIcon } from '../components/Icons';
 import { useNotifications } from '../context/NotificationContext';
-import { SPORT_ICONS } from '../data/data';
+import { getSportIcon } from '../data/data';
 import { getUserChatRooms } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { colors } from '../theme/colors';
@@ -109,7 +109,7 @@ export default function ChatsScreen() {
           return (
             <TouchableOpacity style={styles.roomRow} onPress={() => router.push(`/chat/${item.id}`)} activeOpacity={0.8}>
               <View style={styles.iconBox}>
-                <Text style={{ fontSize: 22 }}>{SPORT_ICONS[item.sport] || '⚽'}</Text>
+                <Text style={{ fontSize: 22 }}>{getSportIcon(item.sport)}</Text>
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={styles.roomTopRow}>

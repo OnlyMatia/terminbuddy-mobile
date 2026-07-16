@@ -7,6 +7,7 @@ export const SPORT_ICONS = {
   Padel: '🏓',
   Tenis: '🎾',
   'Stolni Tenis': '🏓',
+  'Stolni tenis': '🏓',
   'Društvene igre': '🎲',
   Skijanje: '⛷️',
   Badminton: '🏸',
@@ -21,6 +22,16 @@ export const SPORT_ICONS = {
   Boks: '🥊',
   Kikboks: '🥊',
 };
+
+const SPORT_ICONS_LOWER = Object.keys(SPORT_ICONS).reduce((acc, key) => {
+  acc[key.toLowerCase()] = SPORT_ICONS[key];
+  return acc;
+}, {});
+
+export function getSportIcon(sportName, fallback = '⚽') {
+  if (!sportName) return fallback;
+  return SPORT_ICONS_LOWER[sportName.toLowerCase()] || fallback;
+}
 
 export const LEVEL_LABELS = {
   beginner: 'Početnik',

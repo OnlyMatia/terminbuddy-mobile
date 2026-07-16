@@ -9,7 +9,7 @@ import MatchRow from '../components/MatchRow';
 import SettingsModal from '../components/SettingsModal';
 import SportCard from '../components/SportCard';
 import { StatsRow } from '../components/StatsRow';
-import { LEVEL_LABELS, SPORT_ICONS } from '../data/data';
+import { getSportIcon, LEVEL_LABELS } from '../data/data';
 import { colors } from '../theme/colors';
 import { calcAgeFromDob, formatJoined, levelToSkillNumber } from '../utils/utils';
 
@@ -144,7 +144,7 @@ export default function ProfileScreen({ user, isOwner = true, onLogout, onUpdate
                 <SportCard
                   key={s.sport}
                   sport={{
-                    icon: SPORT_ICONS[s.sport] || '⚽',
+                    icon: getSportIcon(s.sport),
                     name: s.sport,
                     sub: `${s.termins_played || 0} termina · ${s.wins || 0} pobjeda`,
                     wins: s.wins || 0,

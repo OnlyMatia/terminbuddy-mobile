@@ -7,12 +7,11 @@ import { FilterModal } from '../components/FilterModal';
 import { CalendarIcon, CloseIcon, FilterIcon, SearchIcon } from '../components/Icons';
 import { SportChips } from '../components/SportChips';
 import TerminCard from '../components/TerminCard';
-import { SPORT_ICONS } from '../data/data';
+import { getSportIcon } from '../data/data';
 import { getTerminsPaginated, searchTermins } from '../lib/api';
 import { registerHomeScrollToTop } from '../lib/homeScrollRegistry';
 import { colors } from '../theme/colors';
 
-const SPORT_ICON_MAP = { 'Svi sportovi': '🔥', ...SPORT_ICONS };
 const PAGE_SIZE = 30;
 
 function isTerminPast(dateStr, timeStr) {
@@ -192,7 +191,7 @@ export default function HomeScreen({ userProfile }) {
     const total = Object.values(sportCounts).reduce((a, b) => a + b, 0);
     const chips = Object.entries(sportCounts)
       .filter(([, count]) => count > 0)
-      .map(([name, count]) => ({ name, icon: SPORT_ICON_MAP[name] || '⚽', count }))
+      .map(([name, count]) => ({ name, icon: getSportIcon(name), count }))
       .sort((a, b) => b.count - a.count);
     return [{ name: 'Svi sportovi', icon: '🔥', count: total }, ...chips];
   }, [sportCounts]);
@@ -351,7 +350,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     color: colors.text,
-    fontSize: 14,
+    fontSize: 13,
   },
   searchBtn: {
     paddingHorizontal: 14,

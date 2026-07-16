@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackIcon, SendIcon } from '../components/Icons';
-import { SPORT_ICONS } from '../data/data';
+import { getSportIcon } from '../data/data';
 import { getChatMessages, getTerminDetails, markChatRead, sendChatMessage } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { colors } from '../theme/colors';
@@ -109,10 +109,16 @@ export default function ChatRoomScreen({ terminId }) {
   const renderMessage = ({ item, index }) => {
     const isMine = item.sender_id === currentUserId;
     const prev = messages[index - 1];
+    const next = messages[index + 1];
     const showDay = !prev || formatDayLabel(prev.created_at) !== formatDayLabel(item.created_at);
+    const nextShowDay = next && formatDayLabel(item.created_at) !== formatDayLabel(next.created_at);
     const isNewSenderRun = !prev || prev.sender_id !== item.sender_id || showDay;
+    const isLastInRun = !next || next.sender_id !== item.sender_id || nextShowDay;
     const showSender = !isMine && isNewSenderRun;
-    const showTime = !prev || showDay || !sameMinute(prev.created_at, item.created_at);
+
+    const bubbleCornerStyle = isMine ? { borderBottomRightRadius: 6 } : isNewSenderRun ? { borderBottomLeftRadius: 6 } : null;
+
+    const showTime = !next || next.sender_id !== item.sender_id || nextShowDay || !sameMinute(item.created_at, next.created_at);
 
     return (
       <View>
@@ -121,24 +127,20 @@ export default function ChatRoomScreen({ terminId }) {
             <Text style={styles.dayText}>{formatDayLabel(item.created_at)}</Text>
           </View>
         )}
-        <View style={[styles.msgRow, isMine ? styles.msgRowMine : styles.msgRowTheirs, !isNewSenderRun && { marginTop: -4 }]}>
+        <View style={[styles.msgRow, isMine ? styles.msgRowMine : styles.msgRowTheirs, { marginBottom: isLastInRun ? 12 : 2 }]}>
           {!isMine && (
             <View style={styles.avatarColumn}>
-              {showSender ? (
-                <>
-                  <View style={styles.msgAvatar}>{item.profiles?.avatar_url ? <Image source={{ uri: item.profiles.avatar_url }} style={styles.msgAvatarImg} /> : <Text style={styles.msgAvatarText}>{getInitials(item.profiles?.username)}</Text>}</View>
-                  <Text style={styles.senderName} numberOfLines={1}>
-                    {item.profiles?.username || 'Korisnik'}
-                  </Text>
-                </>
-              ) : null}
+              {showSender && (
+                <View style={styles.msgAvatar}>{item.profiles?.avatar_url ? <Image source={{ uri: item.profiles.avatar_url }} style={styles.msgAvatarImg} /> : <Text style={styles.msgAvatarText}>{getInitials(item.profiles?.username)}</Text>}</View>
+              )}
             </View>
           )}
-          <View style={[styles.bubbleTimeRow, isMine && { justifyContent: 'flex-end' }]}>
-            <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}>
+          <View style={{ maxWidth: '78%' }}>
+            {showSender && <Text style={styles.senderName}>{item.profiles?.username || 'Korisnik'}</Text>}
+            <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs, bubbleCornerStyle]}>
               <Text style={[styles.msgText, isMine && { color: '#000' }]}>{item.content}</Text>
             </View>
-            {showTime && <Text style={styles.msgTime}>{formatTime(item.created_at)}</Text>}
+            {showTime && <Text style={[styles.msgTime, isMine && { textAlign: 'right' }]}>{formatTime(item.created_at)}</Text>}
           </View>
         </View>
       </View>
@@ -153,7 +155,7 @@ export default function ChatRoomScreen({ terminId }) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.headerInfo} onPress={() => router.push(`/termin/${terminId}`)} activeOpacity={0.8}>
           <View style={styles.headerIconBox}>
-            <Text style={{ fontSize: 18 }}>{termin ? SPORT_ICONS[termin.sport] || '⚽' : '💬'}</Text>
+            <Text style={{ fontSize: 18 }}>{termin ? getSportIcon(termin?.sport) : '💬'}</Text>
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={styles.headerTitle} numberOfLines={1}>
@@ -309,32 +311,24 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   senderName: {
-    color: colors.textSec,
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 3,
-    maxWidth: 40,
-    textAlign: 'center',
-  },
-  bubbleTimeRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 6,
-    maxWidth: '78%',
+    color: colors.logoGreen,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
+    marginLeft: 4,
   },
   bubble: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 15,
     paddingVertical: 10,
-    borderRadius: 18,
     flexShrink: 1,
   },
   bubbleMine: {
     backgroundColor: colors.logoGreen,
-    borderBottomRightRadius: 6,
+    borderRadius: 15,
   },
   bubbleTheirs: {
     backgroundColor: colors.bg3,
-    borderBottomLeftRadius: 6,
+    borderRadius: 15,
   },
   msgText: {
     color: colors.text,
@@ -344,6 +338,8 @@ const styles = StyleSheet.create({
   msgTime: {
     color: colors.textFaint,
     fontSize: 11,
+    marginTop: 3,
+    marginHorizontal: 4,
   },
   inputBar: {
     flexDirection: 'row',
