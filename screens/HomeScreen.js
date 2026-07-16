@@ -228,7 +228,7 @@ export default function HomeScreen({ userProfile }) {
             <View style={styles.toolbar}>
               <View style={styles.searchBox}>
                 <SearchIcon size={16} />
-                <TextInput placeholder="Traži sport, naziv, lokaciju..." placeholderTextColor={colors.textFaint} maxLength={30} value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} style={styles.searchInput} />
+                <TextInput placeholder="Pretraži termine" placeholderTextColor={colors.textFaint} maxLength={30} value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} style={styles.searchInput} />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity onPress={handleClearSearch} hitSlop={8}>
                     <CloseIcon size={14} />
@@ -238,16 +238,11 @@ export default function HomeScreen({ userProfile }) {
               <TouchableOpacity onPress={handleSearch} style={styles.searchBtn}>
                 <Text style={styles.searchBtnText}>Traži</Text>
               </TouchableOpacity>
-            </View>
-
-            <View style={styles.filterRow}>
-              <TouchableOpacity onPress={() => setDateFilterOpen(true)} style={styles.filterBtn}>
-                <CalendarIcon size={16} color={colors.textSec} />
-                <Text style={styles.filterBtnText}>Datum</Text>
+              <TouchableOpacity onPress={() => setDateFilterOpen(true)} style={styles.iconBtn}>
+                <CalendarIcon size={22} color={colors.textSec} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setFilterOpen(true)} style={styles.filterBtn}>
-                <FilterIcon size={16} />
-                <Text style={styles.filterBtnText}>Filteri</Text>
+              <TouchableOpacity onPress={() => setFilterOpen(true)} style={styles.iconBtn}>
+                <FilterIcon size={22} />
               </TouchableOpacity>
             </View>
 
@@ -322,15 +317,16 @@ const styles = StyleSheet.create({
   },
   toolbar: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 10,
+    marginBottom: 16,
   },
   searchBox: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     height: 44,
     borderRadius: 12,
     backgroundColor: colors.bg2,
@@ -340,10 +336,11 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     color: colors.text,
-    fontSize: 13,
+    fontSize: 14,
   },
   searchBtn: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
+    height: 44,
     justifyContent: 'center',
     borderRadius: 12,
     backgroundColor: colors.logoGreen,
@@ -353,25 +350,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  filterBtn: {
-    flexDirection: 'row',
+  iconBtn: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    justifyContent: 'center',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.line2,
-  },
-  filterBtnText: {
-    color: colors.textSec,
-    fontSize: 12,
-    fontWeight: '500',
   },
   emptyText: {
     color: colors.textSec,

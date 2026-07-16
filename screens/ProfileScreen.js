@@ -11,7 +11,7 @@ import SportCard from '../components/SportCard';
 import { StatsRow } from '../components/StatsRow';
 import { LEVEL_LABELS, SPORT_ICONS } from '../data/data';
 import { colors } from '../theme/colors';
-import { calcAgeFromDob, formatJoined } from '../utils/utils';
+import { calcAgeFromDob, formatJoined, levelToSkillNumber } from '../utils/utils';
 
 export default function ProfileScreen({ user, isOwner = true, onLogout, onUpdateCurrency, onUpdateEmailNotifications, onDeleteAccount }) {
   const router = useRouter();
@@ -149,7 +149,7 @@ export default function ProfileScreen({ user, isOwner = true, onLogout, onUpdate
                     sub: `${s.termins_played || 0} termina · ${s.wins || 0} pobjeda`,
                     wins: s.wins || 0,
                     losses: s.losses || 0,
-                    skill: s.skill || 3,
+                    skill: levelToSkillNumber(s.level),
                   }}
                 />
               ))}
@@ -219,7 +219,7 @@ export default function ProfileScreen({ user, isOwner = true, onLogout, onUpdate
             user={user}
             onEditProfile={() => {
               setSettingsOpen(false);
-              router.push('/onboarding?edit=true');
+              router.push('/edit-profile');
             }}
             onUpdateCurrency={onUpdateCurrency}
             onUpdateEmailNotifications={onUpdateEmailNotifications}

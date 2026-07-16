@@ -51,6 +51,7 @@ function RootNavigation() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="login" />
       <Stack.Screen name="onboarding" />
+      <Stack.Screen name="edit-profile" />
     </Stack>
   );
 }

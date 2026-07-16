@@ -8,6 +8,7 @@ import { Toast } from '../components/Toast';
 import WheelColumn from '../components/WheelColumn';
 import { citiesByCountry, SPORT_ICONS, sports } from '../data/data';
 import { colors, radius } from '../theme/colors';
+import { levelToSkillNumber } from '../utils/utils';
 
 const SPORT_OPTIONS = sports.filter((s) => s !== 'Svi sportovi');
 
@@ -74,7 +75,7 @@ export default function OnboardingScreen({ user, editMode = false, onFinish, onE
     editMode && Array.isArray(user?.sports)
       ? user.sports.map((s) => ({
           sport: s.sport,
-          skill: s.skill || 3,
+          skill: levelToSkillNumber(s.level),
           wins: s.wins || 0,
           termins_played: s.termins_played || 0,
         }))

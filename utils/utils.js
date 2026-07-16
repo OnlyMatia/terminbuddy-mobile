@@ -21,6 +21,23 @@ export function levelToSkillNumber(level) {
   }
 }
 
+export function skillNumberToLevel(skill) {
+  switch (skill) {
+    case 1:
+      return 'beginner';
+    case 2:
+      return 'amateur';
+    case 3:
+      return 'intermediate';
+    case 4:
+      return 'advanced';
+    case 5:
+      return 'professional';
+    default:
+      return 'intermediate';
+  }
+}
+
 export function calcAgeFromDob(dobStr) {
   if (typeof dobStr !== 'string') return null;
   const parts = dobStr.split('-').map((n) => parseInt(n, 10));
