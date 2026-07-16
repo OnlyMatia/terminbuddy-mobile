@@ -4,6 +4,7 @@ import { colors, radius } from '../theme/colors';
 
 export function Toast({ toast, onDismiss }) {
   const anim = useRef(new Animated.Value(0)).current;
+  const isError = toast.type !== 'success';
 
   useEffect(() => {
     Animated.spring(anim, {
@@ -27,6 +28,7 @@ export function Toast({ toast, onDismiss }) {
     <Animated.View
       style={[
         styles.container,
+        isError && styles.containerError,
         {
           opacity: anim,
           transform: [
@@ -41,7 +43,7 @@ export function Toast({ toast, onDismiss }) {
       ]}
     >
       <Text style={styles.text}>{toast.message}</Text>
-      <TouchableOpacity onPress={onDismiss} hitSlop={10}>
+      <TouchableOpacity onPress={onDismiss} hitSlop={10} style={styles.dismissBtn}>
         <Text style={styles.dismiss}>✕</Text>
       </TouchableOpacity>
     </Animated.View>
@@ -50,15 +52,14 @@ export function Toast({ toast, onDismiss }) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    position: 'relative',
     backgroundColor: colors.bg3,
     borderWidth: 1,
     borderColor: colors.line2,
     borderRadius: radius.lg,
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingLeft: 16,
+    paddingRight: 34,
     maxWidth: 340,
     shadowColor: '#000',
     shadowOpacity: 0.4,
@@ -66,10 +67,21 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
+  containerError: {
+    borderColor: colors.danger,
+  },
   text: {
     color: colors.text,
     fontSize: 13,
-    flexShrink: 1,
+    textAlign: 'left',
+  },
+  dismissBtn: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dismiss: {
     color: colors.textFaint,

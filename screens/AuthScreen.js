@@ -36,8 +36,8 @@ export default function AuthScreen() {
     confirmPassword: '',
   });
 
-  const showToast = useCallback((message) => {
-    setToast({ message, id: Date.now() });
+  const showToast = useCallback((message, type = 'error') => {
+    setToast({ message, type, id: Date.now() });
   }, []);
 
   const dismissToast = useCallback(() => setToast(null), []);
@@ -176,7 +176,7 @@ export default function AuthScreen() {
         email: pendingEmail,
       });
       if (error) throw new Error(error.message);
-      showToast('Email je ponovno poslan!');
+      showToast('Email je ponovno poslan!', 'success');
       setResendCooldown(60);
     } catch (err) {
       showToast(err.message || 'Greška pri slanju.');
@@ -192,7 +192,7 @@ export default function AuthScreen() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(forgotSentEmail);
       if (error) throw new Error(error.message);
-      showToast('Email je ponovno poslan!');
+      showToast('Email je ponovno poslan!', 'success');
       setResendCooldown(60);
     } catch (err) {
       showToast(err.message || 'Greška pri slanju.');
