@@ -1,10 +1,11 @@
-import { makeRedirectUri } from 'expo-auth-session';
-import * as QueryParams from 'expo-auth-session/build/QueryParams';
-import * as WebBrowser from 'expo-web-browser';
+import { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } from '@react-native-google-signin/google-signin';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-WebBrowser.maybeCompleteAuthSession();
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  offlineAccess: false,
+});
 
 const AuthContext = createContext({
   session: null,
@@ -67,31 +68,39 @@ export function AuthProvider({ children }) {
   };
 
   const signInWithGoogle = async () => {
-    const redirectTo = makeRedirectUri({ scheme: 'terminbuddy', path: 'auth/callback' });
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo,
-        skipBrowserRedirect: true,
-        queryParams: { prompt: 'select_account' },
-      },
-    });
-    if (error) throw new Error(error.message);
+      if (!isSuccessResponse(response)) {
+        return { success: false, error: 'Prijava otkazana.' };
+      }
 
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-    if (result.type !== 'success' || !result.url) return;
+      const idToken = response.data?.idToken;
+      if (!idToken) {
+        return { success: false, error: 'Google nije vratio token.' };
+      }
 
-    const { params, errorCode } = QueryParams.getQueryParams(result.url);
-    if (errorCode) throw new Error(errorCode);
-
-    const { access_token, refresh_token } = params;
-    if (access_token && refresh_token) {
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token,
-        refresh_token,
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
       });
-      if (sessionError) throw new Error(sessionError.message);
+      if (error) return { success: false, error: error.message };
+
+      return { success: true };
+    } catch (err) {
+      if (isErrorWithCode(err)) {
+        if (err.code === statusCodes.SIGN_IN_CANCELLED) {
+          return { success: false, error: null };
+        }
+        if (err.code === statusCodes.IN_PROGRESS) {
+          return { success: false, error: 'Prijava je već u tijeku.' };
+        }
+        if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          return { success: false, error: 'Google Play Services nije dostupan.' };
+        }
+      }
+      return { success: false, error: err.message || 'Nešto je pošlo po zlu.' };
     }
   };
 

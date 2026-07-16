@@ -104,7 +104,10 @@ export default function AuthScreen() {
     setLoading(true);
     setToast(null);
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      if (!result.success && result.error) {
+        showToast(result.error);
+      }
     } catch (err) {
       showToast(err.message || 'Greška pri prijavi.');
     } finally {

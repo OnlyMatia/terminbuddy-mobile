@@ -7,8 +7,10 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
     "plugins": [
       "expo-router",
+      "@react-native-google-signin/google-signin",
       [
         "expo-notifications",
         {
@@ -31,7 +33,6 @@
       "eas": {
         "projectId": "ab36ce8a-9267-48fc-bd41-6fc7ba72696a"
       }
-    },
-    "owner": "onlymatia"
+    }
   }
 }
