@@ -26,6 +26,7 @@ export default function AuthScreen() {
   const [passwordStrength, setPasswordStrength] = useState(0);
 
   const [pendingEmail, setPendingEmail] = useState(null);
+  const [pendingPassword, setPendingPassword] = useState(null);
   const [forgotSentEmail, setForgotSentEmail] = useState(null);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resending, setResending] = useState(false);
@@ -59,6 +60,32 @@ export default function AuthScreen() {
     });
     return () => sub.subscription.unsubscribe();
   }, [pendingEmail]);
+
+  useEffect(() => {
+    if (!pendingEmail || !pendingPassword) return;
+
+    let cancelled = false;
+
+    const poll = async () => {
+      if (cancelled) return;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: pendingEmail,
+        password: pendingPassword,
+      });
+      if (cancelled) return;
+      if (!error && data?.session) {
+        setPendingEmail(null);
+        setPendingPassword(null);
+        router.replace('/onboarding');
+      }
+    };
+
+    const interval = setInterval(poll, 4000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [pendingEmail, pendingPassword]);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -132,6 +159,7 @@ export default function AuthScreen() {
         if (!result.success) throw new Error(result.error);
 
         setPendingEmail(formData.email);
+        setPendingPassword(formData.password);
         setResendCooldown(60);
         setLoading(false);
         return;
@@ -203,6 +231,7 @@ export default function AuthScreen() {
 
   const handleBackToForm = () => {
     setPendingEmail(null);
+    setPendingPassword(null);
     setResendCooldown(0);
     setFormData({ email: '', password: '', confirmPassword: '' });
     setMode('register');
