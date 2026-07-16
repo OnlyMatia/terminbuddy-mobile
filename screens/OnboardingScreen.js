@@ -84,7 +84,7 @@ export default function OnboardingScreen({ user, editMode = false, onFinish, onE
   const initialDob = typeof user?.date_of_birth === 'string' ? user.date_of_birth.split('-').map((n) => parseInt(n, 10)) : null;
 
   const today = new Date();
-  const defaultYear = today.getFullYear() - 18;
+  const defaultYear = 2001;
 
   const [form, setForm] = useState({
     full_name: user?.full_name || '',

@@ -20,6 +20,21 @@ function isTerminPast(dateStr, timeStr) {
   return new Date(`${dateStr}T${timeStr}`) < new Date();
 }
 
+function buildEmptyMessage(filters, dateFilter) {
+  const hasLocation = filters.cities && filters.cities.length > 0;
+  const hasDate = !!dateFilter.from;
+
+  if (hasDate && hasLocation) {
+    return `Nema termina u ovom vremenskom rasponu za ${filters.cities.join(', ')}.`;
+  }
+  if (hasDate) {
+    return 'Nema termina u ovom vremenskom rasponu.';
+  }
+  if (hasLocation) {
+    return `Nema termina za ovu lokaciju (${filters.cities.join(', ')}).`;
+  }
+  return 'Nema termina za odabrane kriterije.';
+}
 function buildSportCounts(data) {
   const counts = {};
   data.forEach((t) => {
@@ -255,8 +270,8 @@ export default function HomeScreen({ userProfile }) {
             )}
 
             {!loading && displayTermini.length === 0 && (
-              <View style={{ paddingVertical: 60, alignItems: 'center' }}>
-                <Text style={styles.emptyText}>Nema termina za odabrane kriterije.</Text>
+              <View style={{ paddingVertical: 60, alignItems: 'center', paddingHorizontal: 32 }}>
+                <Text style={styles.emptyText}>{buildEmptyMessage(filters, dateFilter)}</Text>
               </View>
             )}
           </View>
@@ -362,6 +377,7 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.textSec,
     fontSize: 14,
+    textAlign: 'center',
   },
   footerText: {
     textAlign: 'center',
