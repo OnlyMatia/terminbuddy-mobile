@@ -10,7 +10,7 @@ function getInitials(name) {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || name[0]?.toUpperCase();
 }
 
-function TeamCard({ label, color, players, isOwner, currentUser, hasResult, score, assigning, onRemove }) {
+function TeamCard({ label, color, players, isOwner, currentUser, hasResult, canEdit, score, assigning, onRemove }) {
   return (
     <View style={[styles.teamCard, { borderColor: `${color}33` }]}>
       <View style={styles.teamHeader}>
@@ -22,7 +22,7 @@ function TeamCard({ label, color, players, isOwner, currentUser, hasResult, scor
       ) : (
         <View style={{ gap: 6 }}>
           {players.map((player) => {
-            const canRemove = !hasResult && (isOwner || player.id === currentUser?.id);
+            const canRemove = canEdit && (isOwner || player.id === currentUser?.id);
             return (
               <View key={player.id} style={styles.playerRow}>
                 <View style={styles.miniAvatar}>{player.avatar_url ? <Image source={{ uri: player.avatar_url }} style={styles.miniAvatarImg} /> : <Text style={styles.miniAvatarText}>{getInitials(player.username)}</Text>}</View>
@@ -47,6 +47,14 @@ export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired
   const teams = termin.teams || { a: [], b: [] };
   const hasResult = !!termin.result_entered_at;
 
+  const canEditTeams = (() => {
+    if (hasResult) return false;
+    if (!termin.event_date) return true;
+    const eventDateTime = new Date(`${termin.event_date}T${termin.event_time || '00:00'}`);
+    const cutoff = new Date(eventDateTime.getTime() + 6 * 60 * 60 * 1000);
+    return new Date() <= cutoff;
+  })();
+
   const [editingResult, setEditingResult] = useState(false);
   const [scoreA, setScoreA] = useState(termin.score_a != null ? String(termin.score_a) : '');
   const [scoreB, setScoreB] = useState(termin.score_b != null ? String(termin.score_b) : '');
@@ -66,12 +74,13 @@ export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired
 
   const teamAPlayers = registeredProfiles.filter((p) => teams.a?.includes(p.id));
   const teamBPlayers = registeredProfiles.filter((p) => teams.b?.includes(p.id));
-  const unassigned = registeredProfiles.filter((p) => !teams.a?.includes(p.id) && !teams.b?.includes(p.id));
+  const allUnassigned = registeredProfiles.filter((p) => !teams.a?.includes(p.id) && !teams.b?.includes(p.id));
+  const unassigned = isOwner ? allUnassigned : allUnassigned.filter((p) => p.id === currentUser?.id);
 
   const handleAssign = async (userId, team) => {
     if (assigning) return;
-    if (hasResult) {
-      showToast('Rezultat je već unesen.');
+    if (!canEditTeams) {
+      showToast(hasResult ? 'Rezultat je već unesen.' : 'Ekipe se mogu mijenjati najkasnije 6 sati nakon početka termina.');
       return;
     }
     const isHost = isOwner;
@@ -89,8 +98,8 @@ export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired
 
   const handleRemove = async (userId) => {
     if (assigning) return;
-    if (hasResult) {
-      showToast('Rezultat je već unesen.');
+    if (!canEditTeams) {
+      showToast(hasResult ? 'Rezultat je već unesen.' : 'Ekipe se mogu mijenjati najkasnije 6 sati nakon početka termina.');
       return;
     }
     setAssigning(userId);
@@ -132,13 +141,13 @@ export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired
       {!isSolo && (
         <>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-            <TeamCard label="A" color="#08ff25" players={teamAPlayers} isOwner={isOwner} currentUser={currentUser} hasResult={hasResult} score={termin.score_a} assigning={assigning} onRemove={handleRemove} />
-            <TeamCard label="B" color="#4a9eff" players={teamBPlayers} isOwner={isOwner} currentUser={currentUser} hasResult={hasResult} score={termin.score_b} assigning={assigning} onRemove={handleRemove} />
+            <TeamCard label="A" color="#08ff25" players={teamAPlayers} isOwner={isOwner} currentUser={currentUser} hasResult={hasResult} canEdit={canEditTeams} score={termin.score_a} assigning={assigning} onRemove={handleRemove} />
+            <TeamCard label="B" color="#4a9eff" players={teamBPlayers} isOwner={isOwner} currentUser={currentUser} hasResult={hasResult} canEdit={canEditTeams} score={termin.score_b} assigning={assigning} onRemove={handleRemove} />
           </View>
 
-          {!hasResult && unassigned.length > 0 && (
+          {canEditTeams && unassigned.length > 0 && (
             <View style={{ marginBottom: 12 }}>
-              <Text style={styles.unassignedLabel}>Neraspoređeni ({unassigned.length})</Text>
+              <Text style={styles.unassignedLabel}>{isOwner ? `Neraspoređeni (${allUnassigned.length})` : 'Odaberi ekipu'}</Text>
               <View style={{ gap: 6 }}>
                 {unassigned.map((player) => {
                   const canAssign = isOwner || player.id === currentUser?.id;
@@ -224,7 +233,7 @@ export default function TeamsAndResult({ termin, currentUser, isOwner, isExpired
         </TouchableOpacity>
       )}
 
-      {!hasResult && !isExpired && !isSolo && <Text style={styles.hintText}>{isOwner ? 'Rasporedi igrače u ekipe' : 'Klikni A ili B za odabir ekipe'}</Text>}
+      {canEditTeams && !isSolo && <Text style={styles.hintText}>{isOwner ? 'Rasporedi igrače u ekipe' : 'Klikni A ili B za odabir ekipe'}</Text>}
 
       {!hasResult && isExpired && isFull && !canEnterResult && <Text style={styles.hintText}>Obje ekipe moraju imati igrače za unos rezultata.</Text>}
 
@@ -330,7 +339,7 @@ const styles = StyleSheet.create({
   },
   removeX: {
     color: colors.textFaint,
-    fontSize: 21,
+    fontSize: 16,
   },
   unassignedLabel: {
     color: colors.textSec,

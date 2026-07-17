@@ -6,11 +6,27 @@ const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 const FALLBACK_TITLES = {
-  auto_joined: 'Netko se pridružio terminu',
+  auto_joined: 'Novi igrač se pridružio terminu',
   request_received: 'Novi zahtjev za termin',
   request_approved: 'Prihvaćen si na termin',
-  leave: 'Netko je napustio termin',
+  leave: 'Igrač je napustio termin',
 };
+
+function buildBody(type, username) {
+  const name = username || 'Nepoznat';
+  switch (type) {
+    case 'request_received':
+      return `Korisnik @${name} je poslao zahtjev za pridruživanje. Prihvati prije početka termina.`;
+    case 'auto_joined':
+      return `Korisnik @${name} se pridružio terminu.`;
+    case 'leave':
+      return `Korisnik @${name} je napustio termin.`;
+    case 'request_approved':
+      return `Korisnik @${name} je prihvatio tvoj zahtjev za pridruživanje. Vidimo se na terenu!`;
+    default:
+      return null;
+  }
+}
 
 Deno.serve(async (req) => {
   try {
@@ -37,6 +53,14 @@ Deno.serve(async (req) => {
       else if (termin?.sport) title = termin.sport;
     }
 
+    let senderUsername = null;
+    if (notification.from_user_id) {
+      const { data: sender } = await supabase.from('profiles').select('username').eq('id', notification.from_user_id).single();
+      senderUsername = sender?.username || null;
+    }
+
+    const body = buildBody(notification.type, senderUsername) || notification.message || 'Imaš novu obavijest.';
+
     const pushResponse = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
       headers: {
@@ -47,7 +71,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         to: profile.push_token,
         title,
-        body: notification.message,
+        body,
         sound: 'default',
         priority: 'high',
         data: { terminId: notification.termin_id },
