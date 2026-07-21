@@ -100,7 +100,7 @@ export default function MyTerminsScreen({ createdData, joinedData, viewerCurrenc
         <FlatList
           data={loading ? [] : list}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 40, flexGrow: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 0, paddingBottom: 40, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.logoGreen} colors={[colors.logoGreen]} />}
           renderItem={({ item }) => <TerminCard termin={item} viewerCurrency={viewerCurrency} past={isTerminPast(item.event_date, item.event_time)} highlight={unreadTerminIds.has(item.id)} />}
@@ -117,7 +117,7 @@ export default function MyTerminsScreen({ createdData, joinedData, viewerCurrenc
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 0 }}>
         <Text style={styles.title}>Moji termini</Text>
       </View>
 

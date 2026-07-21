@@ -218,7 +218,7 @@ export default function HomeScreen({ userProfile }) {
         ref={listRef}
         data={displayTermini}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 0, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -242,7 +242,7 @@ export default function HomeScreen({ userProfile }) {
             <View style={styles.toolbar}>
               <View style={styles.searchBox}>
                 <SearchIcon size={16} />
-                <TextInput placeholder="Pretraži termine" placeholderTextColor={colors.textFaint} maxLength={30} value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} style={styles.searchInput} />
+                <TextInput placeholder="Pretraži termin" placeholderTextColor={colors.textFaint} maxLength={30} value={searchQuery} onChangeText={setSearchQuery} onSubmitEditing={handleSearch} style={styles.searchInput} />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity onPress={handleClearSearch} hitSlop={8}>
                     <CloseIcon size={14} />
@@ -326,7 +326,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '600',
     letterSpacing: -0.6,
-    marginTop: 8,
     marginBottom: 16,
   },
   toolbar: {

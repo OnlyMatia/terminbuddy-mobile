@@ -1,12 +1,24 @@
 import { Tabs } from 'expo-router';
-import { StyleSheet } from 'react-native';
-import { CalendarIcon, HomeIcon, MessageCircleIcon, PlusIcon, UserIcon } from '../../components/Icons';
+import { useEffect, useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { CalendarIcon, HomeIcon, MessageCircleIcon, PlusIcon } from '../../components/Icons';
 import { useNotifications } from '../../context/NotificationContext';
+import { getUserProfile } from '../../lib/api';
 import { triggerHomeScrollToTop } from '../../lib/homeScrollRegistry';
 import { colors } from '../../theme/colors';
 
+function getInitials(name) {
+  if (!name) return '?';
+  return name[0]?.toUpperCase();
+}
+
 export default function TabsLayout() {
   const { hasTerminNotifs, hasChatUnread } = useNotifications();
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    getUserProfile().then((res) => setProfile(res?.profile || null));
+  }, []);
 
   return (
     <Tabs
@@ -62,8 +74,12 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profil',
-          tabBarIcon: ({ color }) => <UserIcon size={22} color={color} />,
+          title: profile?.username || 'Profil',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.avatarWrap, focused && { borderColor: colors.logoGreen }]}>
+              {profile?.avatar_url ? <Image source={{ uri: profile.avatar_url }} style={styles.avatarImg} /> : <Text style={[styles.avatarInitials, { color }]}>{getInitials(profile?.username)}</Text>}
+            </View>
+          ),
         }}
       />
     </Tabs>
@@ -95,5 +111,24 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 3,
     marginLeft: 6,
+  },
+  avatarWrap: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.bg3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.line2,
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarInitials: {
+    fontSize: 10,
+    fontWeight: '700',
   },
 });

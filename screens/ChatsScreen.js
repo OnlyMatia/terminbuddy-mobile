@@ -96,7 +96,7 @@ export default function ChatsScreen() {
       <FlatList
         data={loading ? [] : rooms}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40, flexGrow: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 0, paddingBottom: 40, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load({ pull: true })} tintColor={colors.logoGreen} colors={[colors.logoGreen]} />}
         ListHeaderComponent={<Text style={styles.title}>Poruke</Text>}
@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '600',
     letterSpacing: -0.6,
-    marginTop: 8,
     marginBottom: 16,
   },
   roomRow: {
