@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "22023176335",
+    "project_id": "terminbuddy-54573",
+    "storage_bucket": "terminbuddy-54573.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:22023176335:android:ee211dd2147199a159b0fa",
+        "android_client_info": {
+          "package_name": "com.matija.terminbuddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAezLDUSYEN-XE5JaDn9XJaBI_J5Ae5bkY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -27,14 +27,12 @@ export const radius = {
   pill: 999,
 };
 
-// Standardna skala veličina teksta (iOS HIG / Material Design konvencije).
-// Koristi ove vrijednosti u novim komponentama umjesto nasumičnih brojeva.
 export const typography = {
-  hero: 32, // veliki naslovi (Home "Aktivni termini", Profil ime)
-  title: 24, // naslovi ekrana / kartica ("Moji termini")
-  heading: 18, // sekcijski naslovi unutar ekrana
-  body: 15, // primarni tekst, naslovi kartica
-  bodySecondary: 14, // sekundarni tekst, opisi
-  meta: 13, // meta podaci (datum, lokacija, username)
-  caption: 12, // najmanji dopušteni tekst (labele, bedževi) — nikad ispod ovoga
+  hero: 32,
+  title: 24,
+  heading: 18,
+  body: 15,
+  bodySecondary: 14,
+  meta: 13,
+  caption: 12,
 };
