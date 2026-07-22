@@ -57,12 +57,18 @@ DerivedData/
 #
 .metro-health-check*
 
-# Env files — never commit secrets/keys
+# Env files — lokalni razvoj. Build vrijednosti su u eas.json (env blok po profilu).
+# NIKAD ne commitaj — ovdje lako završi pravi secret (npr. service role key).
 #
+.env
 .env.local
 .env.*.local
 .env.staging
 .env.production
+
+# NAPOMENA: google-services.json je NAMJERNO commitan.
+# Treba ga EAS cloud build, a nije pravi secret (ključ je ograničen
+# na package name + SHA-1 potpis i ionako je unutar svakog APK-a).
 
 # Logs
 #
@@ -90,4 +96,3 @@ Thumbs.db
 # EAS / Expo credentials (if generated locally)
 #
 credentials.json
-google-services.json
